@@ -43,6 +43,13 @@ site
 # Local configuration files
 *.local.yaml
 
+# Terraform
+terraform/.terraform/
+terraform/**/.terraform/
+terraform/terraform.tfvars
+terraform/**/*.tfvars
+!terraform/terraform.tfvars.example
+
 # Sensitive credentials
 *-credentials.yaml
 
