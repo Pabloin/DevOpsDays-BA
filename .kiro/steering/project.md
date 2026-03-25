@@ -56,3 +56,21 @@ yarn test           # run tests
 - Catalog index page is set as the root path (`/`)
 - Organization name is "My Company" — update in `app-config.yaml`
 - Production DB config is in `app-config.production.yaml`
+
+## Git Workflow
+- Branch naming: `feature/NN-short-description` (e.g. `feature/02-aws-infrastructure`)
+- Spec naming: `.kiro/specs/NN-short-description/` matching the branch number
+- One feature per branch, merge to main when done
+- Always commit spec files alongside the feature code
+
+## Infrastructure
+- Cloud: AWS
+- IaC: Terraform
+- Container: ECS Fargate
+- CI/CD: GitHub Actions with OIDC (no long-lived AWS credentials)
+- Secrets: AWS Secrets Manager
+
+## Planned Features
+- `01-github-auth` ✅ GitHub OAuth login
+- `02-aws-infrastructure` — Terraform: VPC, ECS, RDS, ALB, ECR, Secrets Manager
+- `03-ci-cd-pipeline` — GitHub Actions: build/push Docker image, deploy to ECS
