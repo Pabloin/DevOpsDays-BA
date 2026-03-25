@@ -1,0 +1,103 @@
+name: Deploy Backstage to ECS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+      ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: backstage-portal
+        run: yarn install --immutable
+
+      - name: Type check
+        working-directory: backstage-portal
+        run: yarn tsc
+
+      - name: Build backend
+        working-directory: backstage-portal
+        run: yarn build:backend
+
+      - name: Build and push Docker image
+        working-directory: backstage-portal
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          ECR_IMAGE="${ECR_REGISTRY}/${ECR_REPOSITORY}"
+          docker build \
+            -f packages/backend/Dockerfile \
+            -t "${ECR_IMAGE}:${IMAGE_TAG}" \
+            -t "${ECR_IMAGE}:latest" \
+            .
+          docker push "${ECR_IMAGE}:${IMAGE_TAG}"
+          docker push "${ECR_IMAGE}:latest"
+          echo "ECR_IMAGE=${ECR_IMAGE}" >> $GITHUB_ENV
+
+      - name: Deploy to ECS
+        run: |
+          # Get current task definition and strip AWS-managed fields
+          TASK_DEF=$(aws ecs describe-task-definition \
+            --task-definition "${ECS_SERVICE}" \
+            --query taskDefinition \
+            --output json | jq 'del(
+              .taskDefinitionArn,
+              .revision,
+              .status,
+              .requiresAttributes,
+              .compatibilities,
+              .registeredAt,
+              .registeredBy
+            )')
+
+          # Replace container image with new ECR image
+          NEW_TASK_DEF=$(echo "$TASK_DEF" | jq \
+            --arg IMAGE "${ECR_IMAGE}:${IMAGE_TAG}" \
+            '.containerDefinitions[0].image = $IMAGE')
+
+          # Register new task definition revision
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "$NEW_TASK_DEF" \
+            --query taskDefinition.taskDefinitionArn \
+            --output text)
+
+          # Update service to use new revision
+          aws ecs update-service \
+            --cluster "${ECS_CLUSTER}" \
+            --service "${ECS_SERVICE}" \
+            --task-definition "$NEW_TASK_DEF_ARN"
+
+          # Wait for service to stabilize
+          aws ecs wait services-stable \
+            --cluster "${ECS_CLUSTER}" \
+            --services "${ECS_SERVICE}"

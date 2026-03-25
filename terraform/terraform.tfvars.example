@@ -7,6 +7,9 @@ environment = "mvp"
 
 project = "backstage"
 
+# GitHub repository in org/repo format — used to scope the OIDC trust policy
+github_repository = "Pabloin/DevOpsDays-BA"
+
 vpc_cidr = "10.0.0.0/16"
 
 availability_zones = ["us-east-1a", "us-east-1b"]

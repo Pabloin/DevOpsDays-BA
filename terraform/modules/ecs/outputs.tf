@@ -17,3 +17,13 @@ output "ecs_security_group_id" {
   description = "ID of the ECS tasks security group"
   value       = var.ecs_security_group_id
 }
+
+output "ecs_cluster_arn" {
+  description = "ARN of the ECS cluster"
+  value       = aws_ecs_cluster.main.arn
+}
+
+output "ecs_service_arn" {
+  description = "ARN of the ECS service"
+  value       = aws_ecs_service.main.id
+}

@@ -125,3 +125,18 @@ module "ecs" {
   environment = var.environment
   project     = var.project
 }
+
+# ─── OIDC (GitHub Actions) ────────────────────────────────────────────────────
+
+module "oidc" {
+  source = "./modules/oidc"
+
+  github_repository      = var.github_repository
+  ecr_repository_arn     = module.ecr.repository_arn
+  ecs_cluster_arn        = module.ecs.ecs_cluster_arn
+  ecs_service_arn        = module.ecs.ecs_service_arn
+  ecs_execution_role_arn = module.ecs.ecs_task_execution_role_arn
+
+  environment = var.environment
+  project     = var.project
+}

@@ -1,3 +1,9 @@
+variable "github_repository" {
+  description = "GitHub repository in org/repo format, used to scope the OIDC trust policy (e.g. 'Pabloin/DevOpsDays-BA')"
+  type        = string
+  default     = "Pabloin/DevOpsDays-BA"
+}
+
 variable "aws_region" {
   description = "AWS region for all resources"
   type        = string

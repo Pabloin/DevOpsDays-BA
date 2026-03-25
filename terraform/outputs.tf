@@ -17,3 +17,8 @@ output "ecs_cluster_name" {
   description = "ECS cluster name — use this in CI/CD to trigger deployments"
   value       = module.ecs.ecs_cluster_name
 }
+
+output "github_actions_role_arn" {
+  description = "ARN of the GitHub Actions IAM role — store as AWS_ROLE_ARN GitHub secret"
+  value       = module.oidc.role_arn
+}
