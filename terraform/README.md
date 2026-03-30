@@ -1,6 +1,9 @@
 # Terraform Infrastructure
 
-Deploys the Backstage portal to AWS (VPC, ECS Fargate, RDS, ALB, ECR, Secrets Manager).
+Deploys the Backstage portal to AWS: VPC, ECS Fargate, RDS, ALB, ECR, Secrets Manager.
+
+Networking uses VPC endpoints instead of a NAT Gateway to reduce cost (~$60/month vs ~$88/month).
+See [README_COSTS.md](./README_COSTS.md) for the full breakdown.
 
 ## Prerequisites
 
@@ -9,7 +12,16 @@ Deploys the Backstage portal to AWS (VPC, ECS Fargate, RDS, ALB, ECR, Secrets Ma
 
 ## First-time Setup
 
-### 1. Bootstrap — create the S3 state bucket
+### 1. Set your AWS profile
+
+```bash
+export AWS_PROFILE=chile
+aws sts get-caller-identity  # verify you're on the right account
+```
+
+### 2. Bootstrap — create the S3 state bucket
+
+Run once to create the `backstage-portal-tfstate` S3 bucket used for remote state:
 
 ```bash
 cd terraform/bootstrap
@@ -17,12 +29,7 @@ terraform init
 terraform apply -auto-approve
 ```
 
-This creates the `backstage-portal-tfstate` S3 bucket used to store remote state.
-Only needs to be run once.
-
-### 2. Configure non-secret variables
-
-Copy the example and edit as needed:
+### 3. Configure non-secret variables
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
@@ -37,7 +44,7 @@ The following variables are sensitive and should never be committed:
 - `github_oauth_client_id`
 - `github_oauth_client_secret`
 
-### Option A — inline environment variables (simplest)
+### Option A — inline (simplest)
 
 ```bash
 TF_VAR_github_oauth_client_id="your-client-id" \
@@ -84,12 +91,12 @@ terraform apply
 ```bash
 cd terraform
 terraform init
-terraform plan
-terraform apply
+terraform plan -out=tfplan
+terraform apply tfplan
 ```
 
-To use a specific AWS profile:
+## Notes
 
-```bash
-export AWS_PROFILE=your-profile-name
-```
+- The ALB HTTP listener redirects to HTTPS. Set `acm_certificate_arn` in `terraform.tfvars` to enable HTTPS, or leave empty for HTTP only.
+- ECS tasks will fail to start until a Docker image is pushed to ECR (handled by the CI/CD pipeline in `03-ci-cd-pipeline`).
+- RDS runs in private subnets — only accessible from ECS tasks via the security group.
