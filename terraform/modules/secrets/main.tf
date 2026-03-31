@@ -25,7 +25,7 @@ resource "aws_secretsmanager_secret_version" "rds" {
   secret_string = jsonencode({
     username = var.rds_username
     password = random_password.rds.result
-    host     = "placeholder"
+    host     = var.rds_endpoint
     port     = 5432
   })
 }

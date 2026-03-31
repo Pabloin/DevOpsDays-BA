@@ -64,30 +64,38 @@ resource "aws_lb_target_group" "main" {
   tags = merge(local.tags, { Name = "${var.project}-${var.environment}-tg" })
 }
 
+# HTTP listener — forwards directly when no cert, redirects to HTTPS when cert is present
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
-    type = "redirect"
+    type             = var.acm_certificate_arn != "" ? "redirect" : "forward"
+    target_group_arn = var.acm_certificate_arn == "" ? aws_lb_target_group.main.arn : null
 
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
+    dynamic "redirect" {
+      for_each = var.acm_certificate_arn != "" ? [1] : []
+      content {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
     }
   }
 
   tags = merge(local.tags, { Name = "${var.project}-${var.environment}-http-listener" })
 }
 
+# HTTPS listener — only created when a certificate is provided
 resource "aws_lb_listener" "https" {
+  count = var.acm_certificate_arn != "" ? 1 : 0
+
   load_balancer_arn = aws_lb.main.arn
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = var.acm_certificate_arn != "" ? var.acm_certificate_arn : null
+  certificate_arn   = var.acm_certificate_arn
 
   default_action {
     type             = "forward"

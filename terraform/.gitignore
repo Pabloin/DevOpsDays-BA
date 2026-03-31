@@ -13,3 +13,7 @@
 *.tfstate
 *.tfstate.backup
 *.tfstate.lock.info
+
+# Plan files
+*.tfplan
+tfplan

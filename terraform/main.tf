@@ -36,6 +36,7 @@ module "secrets" {
 
   github_oauth_client_id     = var.github_oauth_client_id
   github_oauth_client_secret = var.github_oauth_client_secret
+  rds_endpoint               = module.rds.db_endpoint
 
   environment = var.environment
   project     = var.project

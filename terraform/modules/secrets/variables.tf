@@ -4,6 +4,12 @@ variable "rds_username" {
   default     = "backstage"
 }
 
+variable "rds_endpoint" {
+  description = "RDS instance endpoint hostname (set after RDS is created)"
+  type        = string
+  default     = ""
+}
+
 variable "github_oauth_client_id" {
   description = "GitHub OAuth application client ID"
   type        = string
