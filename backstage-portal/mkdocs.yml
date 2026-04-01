@@ -2,3 +2,9 @@ site_name: Backstage Portal
 docs_dir: docs
 plugins:
   - techdocs-core
+nav:
+  - Overview: index.md
+  - Architecture: architecture.md
+  - Authentication: authentication.md
+  - CI/CD Pipeline: cicd.md
+  - Local Development: local-dev.md

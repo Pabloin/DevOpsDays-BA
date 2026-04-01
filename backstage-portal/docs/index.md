@@ -1,30 +1,18 @@
 # Backstage Portal
 
-Welcome to the Backstage developer portal documentation.
+Internal developer portal for DevOpsDays BA — built with [Backstage](https://backstage.io) and deployed on AWS.
 
-## Overview
+## What's inside
 
-This portal is built with [Backstage](https://backstage.io) and provides:
+| Feature | Description |
+|---|---|
+| **Software Catalog** | Browse and manage all services, components, and APIs |
+| **TechDocs** | In-app documentation rendered from Markdown in each repo |
+| **Scaffolder** | Create new services from templates with one click |
+| **GitHub Auth** | Sign in with your GitHub account |
 
-- Software catalog — browse and manage all services and components
-- TechDocs — in-app documentation for every catalog entity
-- Software templates — scaffold new services via the Scaffolder
-- GitHub authentication — sign in with your GitHub account
+## Quick links
 
-## Local Development
-
-Run from `backstage-portal/`:
-
-```bash
-yarn start
-```
-
-The app runs on `http://localhost:3000` and the backend on `http://localhost:7007`.
-
-## Authentication
-
-GitHub OAuth is configured. You need `AUTH_GITHUB_CLIENT_ID` and `AUTH_GITHUB_CLIENT_SECRET` set in `app-config.local.yaml`.
-
-## Infrastructure
-
-Production deployment uses AWS ECS Fargate with Terraform. See the `terraform/` directory for infrastructure code.
+- Portal: [https://backstage.glaciar.org](https://backstage.glaciar.org)
+- Infrastructure: `terraform/` directory
+- GitHub: [Pabloin/DevOpsDays-BA](https://github.com/Pabloin/DevOpsDays-BA)
