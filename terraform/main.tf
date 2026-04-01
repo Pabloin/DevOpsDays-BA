@@ -11,7 +11,6 @@ module "vpc" {
   public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
   private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24"]
   availability_zones   = var.availability_zones
-  aws_region           = var.aws_region
 
   environment = var.environment
   project     = var.project
@@ -49,7 +48,18 @@ module "alb" {
 
   vpc_id              = module.vpc.vpc_id
   public_subnet_ids   = module.vpc.public_subnet_ids
-  acm_certificate_arn = var.acm_certificate_arn
+  acm_certificate_arn = module.dns.certificate_arn
+
+  environment = var.environment
+  project     = var.project
+}
+
+# ─── DNS ─────────────────────────────────────────────────────────────────────
+
+module "dns" {
+  source = "./modules/dns"
+
+  domain_name = var.domain_name
 
   environment = var.environment
   project     = var.project
@@ -122,7 +132,7 @@ module "ecs" {
   db_endpoint = module.rds.db_endpoint
   db_port     = module.rds.db_port
 
-  app_base_url = var.acm_certificate_arn != "" ? "https://${module.alb.alb_dns_name}" : "http://${module.alb.alb_dns_name}"
+  app_base_url = "https://${var.domain_name}"
 
   environment = var.environment
   project     = var.project

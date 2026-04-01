@@ -34,10 +34,10 @@ variable "availability_zones" {
   default     = ["us-east-1a", "us-east-1b"]
 }
 
-variable "acm_certificate_arn" {
-  description = "ACM certificate ARN for the HTTPS ALB listener. Leave empty to skip HTTPS."
+variable "domain_name" {
+  description = "FQDN for the portal subdomain — a Route 53 hosted zone and ACM certificate will be created for this domain"
   type        = string
-  default     = ""
+  default     = "portal.glaciar.org"
 }
 
 variable "image_tag" {

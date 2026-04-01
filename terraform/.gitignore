@@ -4,6 +4,9 @@
 
 # Secret env files
 .env
+.env.local
+.env.prod
+.env.*
 
 # Terraform working directories
 .terraform/

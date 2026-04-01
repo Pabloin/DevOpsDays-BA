@@ -1,3 +1,8 @@
+output "portal_nameservers" {
+  description = "Nameservers for the portal.glaciar.org hosted zone — add these as an NS record for portal.glaciar.org in the registrar account to complete subdomain delegation"
+  value       = module.dns.name_servers
+}
+
 output "alb_dns_name" {
   description = "DNS name of the Application Load Balancer — use this for DNS configuration"
   value       = module.alb.alb_dns_name

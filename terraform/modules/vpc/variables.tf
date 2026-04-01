@@ -21,11 +21,6 @@ variable "availability_zones" {
   type        = list(string)
 }
 
-variable "aws_region" {
-  description = "AWS region, used for VPC endpoint service names"
-  type        = string
-}
-
 variable "environment" {
   description = "Environment name for tagging"
   type        = string

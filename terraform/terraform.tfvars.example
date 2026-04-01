@@ -14,10 +14,9 @@ vpc_cidr = "10.0.0.0/16"
 
 availability_zones = ["us-east-1a", "us-east-1b"]
 
-# Leave empty to skip HTTPS on the ALB listener.
-# Set to a validated ACM certificate ARN to enable HTTPS.
-# e.g. "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-acm_certificate_arn = ""
+# Custom domain for the portal — a Route 53 hosted zone and ACM certificate will be created.
+# After apply, add the portal_nameservers output as an NS record in the registrar account.
+domain_name = "portal.glaciar.org"
 
 # Docker image tag to deploy. Typically set by CI/CD (e.g. the Git SHA).
 image_tag = "latest"

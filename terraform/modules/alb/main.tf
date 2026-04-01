@@ -64,33 +64,27 @@ resource "aws_lb_target_group" "main" {
   tags = merge(local.tags, { Name = "${var.project}-${var.environment}-tg" })
 }
 
-# HTTP listener — forwards directly when no cert, redirects to HTTPS when cert is present
+# HTTP listener — redirects to HTTPS (always, since cert is always provided by dns module)
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
-    type             = var.acm_certificate_arn != "" ? "redirect" : "forward"
-    target_group_arn = var.acm_certificate_arn == "" ? aws_lb_target_group.main.arn : null
+    type = "redirect"
 
-    dynamic "redirect" {
-      for_each = var.acm_certificate_arn != "" ? [1] : []
-      content {
-        port        = "443"
-        protocol    = "HTTPS"
-        status_code = "HTTP_301"
-      }
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
     }
   }
 
   tags = merge(local.tags, { Name = "${var.project}-${var.environment}-http-listener" })
 }
 
-# HTTPS listener — only created when a certificate is provided
+# HTTPS listener — always created (certificate always provided by dns module)
 resource "aws_lb_listener" "https" {
-  count = var.acm_certificate_arn != "" ? 1 : 0
-
   load_balancer_arn = aws_lb.main.arn
   port              = 443
   protocol          = "HTTPS"

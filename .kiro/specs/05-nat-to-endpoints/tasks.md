@@ -39,3 +39,19 @@ Replace `aws_nat_gateway` and `aws_eip` with VPC Interface Endpoints (ECR, Secre
 
 - [x] 6. Final checkpoint
   - Ensure all tests pass, ask the user if questions arise.
+
+---
+
+## Claude Update (2026-04-01)
+
+**Known limitation discovered**: Removing the NAT Gateway breaks GitHub OAuth authentication.
+The Backstage backend needs outbound internet access to call `https://github.com/login/oauth/access_token`
+during the OAuth token exchange. VPC endpoints only cover AWS services — they cannot route traffic
+to external APIs like GitHub.
+
+**Impact**: The `/api/auth/github/start` endpoint returns a 302 redirect (works — browser-side),
+but when GitHub redirects back with the authorization code, the backend cannot exchange it for a
+token because it has no route to `github.com`. The auth flow fails silently with a 401.
+
+**Resolution**: See spec `07-single-az-nat` — adds a single-AZ NAT Gateway to restore outbound
+internet access for ECS tasks at ~$16/month (half the cost of the original dual-AZ setup).

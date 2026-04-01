@@ -1,0 +1,2 @@
+name: 07-single-az-nat
+description: Add single-AZ NAT Gateway for outbound internet access (GitHub OAuth fix)
