@@ -12,10 +12,11 @@ jobs:
       contents: read
 
     env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-      ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
-      ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+      AWS_REGION: us-east-1
+      ECR_REPOSITORY: backstage-mvp
+      ECS_CLUSTER: backstage-mvp-cluster
+      ECS_SERVICE: backstage-mvp-service
+      TASK_DEFINITION_FAMILY: backstage-mvp-backstage
       IMAGE_TAG: ${{ github.sha }}
 
     steps:
@@ -68,7 +69,7 @@ jobs:
         run: |
           # Get current task definition and strip AWS-managed fields
           TASK_DEF=$(aws ecs describe-task-definition \
-            --task-definition "${ECS_SERVICE}" \
+            --task-definition "${TASK_DEFINITION_FAMILY}" \
             --query taskDefinition \
             --output json | jq 'del(
               .taskDefinitionArn,
