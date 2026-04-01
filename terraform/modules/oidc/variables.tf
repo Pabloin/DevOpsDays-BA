@@ -23,6 +23,11 @@ variable "ecs_execution_role_arn" {
   type        = string
 }
 
+variable "ecs_task_role_arn" {
+  description = "ARN of the ECS task role (for iam:PassRole during RegisterTaskDefinition)"
+  type        = string
+}
+
 variable "environment" {
   description = "Environment name for tagging"
   type        = string

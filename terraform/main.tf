@@ -148,6 +148,7 @@ module "oidc" {
   ecs_cluster_arn        = module.ecs.ecs_cluster_arn
   ecs_service_arn        = module.ecs.ecs_service_arn
   ecs_execution_role_arn = module.ecs.ecs_task_execution_role_arn
+  ecs_task_role_arn      = module.ecs.ecs_task_role_arn
 
   environment = var.environment
   project     = var.project

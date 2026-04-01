@@ -98,12 +98,12 @@ data "aws_iam_policy_document" "github_actions_permissions" {
     resources = [var.ecs_cluster_arn, var.ecs_service_arn]
   }
 
-  # PassRole scoped to ECS execution role only
+  # PassRole scoped to ECS execution and task roles
   statement {
     sid       = "PassExecutionRole"
     effect    = "Allow"
     actions   = ["iam:PassRole"]
-    resources = [var.ecs_execution_role_arn]
+    resources = [var.ecs_execution_role_arn, var.ecs_task_role_arn]
   }
 }
 
