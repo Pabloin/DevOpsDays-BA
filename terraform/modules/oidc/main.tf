@@ -76,11 +76,14 @@ data "aws_iam_policy_document" "github_actions_permissions" {
     resources = [var.ecr_repository_arn]
   }
 
-  # ECS task definition registration (must be resource *)
+  # ECS task definition actions (must be resource *)
   statement {
-    sid       = "ECSRegisterTaskDef"
-    effect    = "Allow"
-    actions   = ["ecs:RegisterTaskDefinition"]
+    sid    = "ECSRegisterTaskDef"
+    effect = "Allow"
+    actions = [
+      "ecs:RegisterTaskDefinition",
+      "ecs:DescribeTaskDefinition",
+    ]
     resources = ["*"]
   }
 
@@ -91,7 +94,6 @@ data "aws_iam_policy_document" "github_actions_permissions" {
     actions = [
       "ecs:DescribeServices",
       "ecs:UpdateService",
-      "ecs:DescribeTaskDefinition",
     ]
     resources = [var.ecs_cluster_arn, var.ecs_service_arn]
   }
