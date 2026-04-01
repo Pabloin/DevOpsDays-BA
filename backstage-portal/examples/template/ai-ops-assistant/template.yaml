@@ -1,0 +1,113 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: ai-ops-assistant
+  title: AI Ops Assistant
+  description: Full-stack AI assistant with React chat UI and AWS Bedrock (Claude/Nova) backend. Customize the system prompt to give your assistant a personality.
+  tags:
+    - ai
+    - bedrock
+    - react
+    - nodejs
+    - recommended
+spec:
+  owner: user:Pabloin
+  type: service
+
+  parameters:
+    - title: Service details
+      required: [service_name, description]
+      properties:
+        service_name:
+          title: Service name
+          type: string
+          description: Name of your AI assistant (used as repo name)
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: What does this assistant help with?
+
+    - title: AI configuration
+      required: [system_prompt, bedrock_model, aws_region]
+      properties:
+        system_prompt:
+          title: System prompt
+          type: string
+          description: The assistant's personality and instructions. Stored in prompt.md — edit it later to change behavior.
+          default: |
+            You are an AI ops assistant. You help engineers understand services,
+            diagnose incidents, and follow runbooks. Be concise and practical.
+          ui:widget: textarea
+          ui:options:
+            rows: 6
+        bedrock_model:
+          title: Bedrock model
+          type: string
+          description: The foundation model to use
+          default: anthropic.claude-3-haiku-20240307-v1:0
+          enum:
+            - anthropic.claude-3-haiku-20240307-v1:0
+            - anthropic.claude-3-5-sonnet-20240620-v1:0
+            - amazon.nova-lite-v1:0
+            - amazon.nova-pro-v1:0
+          enumNames:
+            - 'Claude 3 Haiku (fast, recommended)'
+            - 'Claude 3.5 Sonnet (higher quality)'
+            - 'Nova Lite (AWS, very cheap)'
+            - 'Nova Pro (AWS, balanced)'
+        aws_region:
+          title: AWS region
+          type: string
+          description: AWS region for the Bedrock endpoint
+          default: us-east-1
+
+    - title: Repository location
+      required: [repoUrl]
+      properties:
+        repoUrl:
+          title: Repository location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  steps:
+    - id: fetch
+      name: Fetch template
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          service_name: ${{ parameters.service_name }}
+          description: ${{ parameters.description }}
+          system_prompt: ${{ parameters.system_prompt }}
+          bedrock_model: ${{ parameters.bedrock_model }}
+          aws_region: ${{ parameters.aws_region }}
+          repo_owner: ${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+
+    - id: register
+      name: Register in catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in Backstage catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}

@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - BEDROCK_MODEL_ID=${{ '${{BEDROCK_MODEL_ID:-' }}${{ values.bedrock_model }}${{ '}}' }}
+      - AWS_REGION=${{ '${{AWS_REGION:-' }}${{ values.aws_region }}${{ '}}' }}
+      - AWS_ACCESS_KEY_ID=${{ '${{AWS_ACCESS_KEY_ID}}' }}
+      - AWS_SECRET_ACCESS_KEY=${{ '${{AWS_SECRET_ACCESS_KEY}}' }}
+      - AWS_SESSION_TOKEN=${{ '${{AWS_SESSION_TOKEN}}' }}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
