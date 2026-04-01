@@ -1,0 +1,2 @@
+name: 08-ai-ops-assistant-template
+description: Backstage scaffolder template that generates a full-stack AI Ops Assistant app with React frontend, Node.js/Express backend, and AWS Bedrock (Claude/Nova)

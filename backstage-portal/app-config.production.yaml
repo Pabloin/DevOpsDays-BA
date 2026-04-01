@@ -40,6 +40,11 @@ catalog:
         - allow: [Template]
 
     - type: file
+      target: ./examples/template/ai-ops-assistant/template.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
       target: ./examples/org.yaml
       rules:
         - allow: [User, Group]
