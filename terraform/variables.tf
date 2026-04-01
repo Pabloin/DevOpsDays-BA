@@ -64,12 +64,6 @@ variable "github_pat" {
   sensitive   = true
 }
 
-variable "backup_retention_days" {
-  description = "Number of days to retain RDS automated backups"
-  type        = number
-  default     = 7
-}
-
 variable "image_retention_count" {
   description = "Number of ECR images to retain via lifecycle policy"
   type        = number

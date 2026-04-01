@@ -25,8 +25,5 @@ image_tag = "latest"
 github_oauth_client_id     = "<your-github-oauth-client-id>"
 github_oauth_client_secret = "<your-github-oauth-client-secret>"
 
-# Days to retain RDS automated backups (0 disables backups)
-backup_retention_days = 7
-
 # Number of ECR images to keep; older images are pruned by lifecycle policy
 image_retention_count = 10

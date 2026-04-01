@@ -58,7 +58,7 @@ resource "aws_db_instance" "main" {
   publicly_accessible = false
   deletion_protection = false
 
-  backup_retention_period = var.backup_retention_days
+  backup_retention_period = 0
   skip_final_snapshot     = true
 
   tags = merge(local.tags, { Name = "${var.project}-${var.environment}-postgres" })

@@ -108,7 +108,6 @@ module "rds" {
   ecs_security_group_id = aws_security_group.ecs.id
   db_username           = module.secrets.rds_username
   rds_secret_arn        = module.secrets.rds_secret_arn
-  backup_retention_days = var.backup_retention_days
 
   environment = var.environment
   project     = var.project

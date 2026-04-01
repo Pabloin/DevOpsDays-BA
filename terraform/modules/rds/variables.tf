@@ -23,12 +23,6 @@ variable "rds_secret_arn" {
   type        = string
 }
 
-variable "backup_retention_days" {
-  description = "Number of days to retain automated RDS backups"
-  type        = number
-  default     = 7
-}
-
 variable "environment" {
   description = "Environment name for tagging"
   type        = string
