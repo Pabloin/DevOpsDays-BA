@@ -22,6 +22,12 @@ variable "github_oauth_client_secret" {
   sensitive   = true
 }
 
+variable "github_pat" {
+  description = "GitHub Personal Access Token for the Backstage scaffolder"
+  type        = string
+  sensitive   = true
+}
+
 variable "environment" {
   description = "Environment name for tagging"
   type        = string

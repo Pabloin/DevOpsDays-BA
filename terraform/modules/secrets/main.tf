@@ -44,5 +44,6 @@ resource "aws_secretsmanager_secret_version" "github" {
   secret_string = jsonencode({
     AUTH_GITHUB_CLIENT_ID     = var.github_oauth_client_id
     AUTH_GITHUB_CLIENT_SECRET = var.github_oauth_client_secret
+    GITHUB_TOKEN              = var.github_pat
   })
 }

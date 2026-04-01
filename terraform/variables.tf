@@ -58,6 +58,12 @@ variable "github_oauth_client_secret" {
   sensitive   = true
 }
 
+variable "github_pat" {
+  description = "GitHub Personal Access Token for the Backstage scaffolder"
+  type        = string
+  sensitive   = true
+}
+
 variable "backup_retention_days" {
   description = "Number of days to retain RDS automated backups"
   type        = number

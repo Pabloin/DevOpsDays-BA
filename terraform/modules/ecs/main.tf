@@ -126,6 +126,10 @@ resource "aws_ecs_task_definition" "main" {
         {
           name      = "AUTH_GITHUB_CLIENT_SECRET"
           valueFrom = "${var.github_secret_arn}:AUTH_GITHUB_CLIENT_SECRET::"
+        },
+        {
+          name      = "GITHUB_TOKEN"
+          valueFrom = "${var.github_secret_arn}:GITHUB_TOKEN::"
         }
       ]
 
