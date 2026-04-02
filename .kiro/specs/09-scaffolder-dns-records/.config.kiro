@@ -1,0 +1,6 @@
+version: 1
+title: Scaffolder DNS Records
+description: Enhance template to create Route53 records dynamically when scaffolding apps
+state: in_progress
+owners:
+  - pabloin
