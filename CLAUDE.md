@@ -149,6 +149,87 @@ The portal runs at `backstage.glaciar.org`:
 
 ### Troubleshooting
 
+**Verify GitHub Token is correct:**
+
+Before restarting tasks or making changes, verify the token is working:
+
+```bash
+# 1. Compare token in .env with token in Secrets Manager
+echo "Token in .env.glaciar.org:"
+grep github_pat terraform/.env.glaciar.org | cut -d'"' -f2 | cut -c1-30
+
+echo "Token in Secrets Manager:"
+aws secretsmanager get-secret-value \
+  --secret-id backstage-mvp-github-oauth \
+  --profile chile --region us-east-1 \
+  --query 'SecretString' --output text | jq -r '.GITHUB_TOKEN' | cut -c1-30
+
+# Should match! If not, run terraform apply again.
+
+# 2. Test token is valid and has access to mvp-glaciar-org
+TOKEN=$(aws secretsmanager get-secret-value \
+  --secret-id backstage-mvp-github-oauth \
+  --profile chile --region us-east-1 \
+  --query 'SecretString' --output text | jq -r '.GITHUB_TOKEN')
+
+curl -H "Authorization: token $TOKEN" \
+  https://api.github.com/orgs/mvp-glaciar-org/repos | jq '.[0].name'
+# Should return repo names, not 404 or authentication error
+
+# 3. Verify task restarted after terraform apply
+# Show current task ID and start time
+echo "Current task:"
+aws ecs describe-tasks \
+  --cluster backstage-mvp-cluster \
+  --tasks $(aws ecs list-tasks --cluster backstage-mvp-cluster \
+    --service-name backstage-mvp-service --profile chile \
+    --region us-east-1 --query 'taskArns[0]' --output text) \
+  --profile chile --region us-east-1 \
+  --query 'tasks[0].{taskId:taskArn,startedAt:startedAt,taskDefinition:taskDefinitionArn}'
+# Expected: startedAt should be AFTER you ran terraform apply (within last few minutes)
+
+# Show recent service events to see task restarts
+echo "Recent service events:"
+aws ecs describe-services \
+  --cluster backstage-mvp-cluster \
+  --services backstage-mvp-service \
+  --profile chile --region us-east-1 \
+  --query 'services[0].events[0:3]' \
+  --output table
+# Expected output:
+# | createdAt                        | id                                   | message                                                    |
+# | 2026-04-05T18:07:59.653000-03:00 | 9adc8782-4d18-40cd-963a-e7afed48206f | (service backstage-mvp-service) has reached a steady state |
+# | 2026-04-05T18:07:59.652000-03:00 | 51ee24a1-2cbe-4920-98d0-858b7224662a | (service backstage-mvp-service) (deployment ...) completed |
+# | 2026-04-05T18:06:59.140000-03:00 | d286b6b0-2851-465c-b5b5-db1c2b712429 | has begun draining connections on 1 tasks                  |
+# Top event should be "has reached a steady state" with recent timestamp (last few minutes)
+# If the timestamp is old (hours/days ago), the task hasn't restarted since terraform apply
+```
+
+**Summary template for verification:**
+
+After running the above commands, provide a summary like this:
+
+```
+✅ Token verification:
+   - .env token: ghp_SaotzDe9qKw0Fdto... (first 20 chars)
+   - AWS token:  ghp_SaotzDe9qKw0Fdto... (first 20 chars)
+   - Match: YES ✓
+
+✅ Token access test:
+   - Can list repos in mvp-glaciar-org: YES ✓
+   - Sample repo found: test-token
+
+✅ Task restart verification:
+   - Current task ID: ae09437604994eab802373ca56c8b294
+   - Started at: 2026-04-05 18:06:06 (3 minutes ago)
+   - Task definition: revision 16
+   - Last deployment: 2026-04-05 18:07:59 (steady state)
+   - Status: Task restarted recently ✓
+
+Conclusion: Token is correct and task is using the updated secret. 
+If scaffolder still fails, the problem is NOT the GitHub token.
+```
+
 **ECS tasks failing to start:**
 - Check CloudWatch logs: `/ecs/backstage-mvp-backstage`
 - Verify secrets in Secrets Manager
