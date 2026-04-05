@@ -70,4 +70,8 @@ COPY --chown=node:node examples ./examples
 COPY --chown=node:node packages/backend/dist/bundle.tar.gz app-config*.yaml ./
 RUN tar xzf bundle.tar.gz && rm bundle.tar.gz
 
+# Patch: add retry logic to scaffolder git push (GitHub race condition workaround)
+COPY --chown=node:node packages/backend/patch-scaffolder-push-retry.js ./packages/backend/
+RUN node packages/backend/patch-scaffolder-push-retry.js
+
 CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
