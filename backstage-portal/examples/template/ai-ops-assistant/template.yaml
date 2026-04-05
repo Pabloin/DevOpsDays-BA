@@ -64,17 +64,22 @@ spec:
           default: us-east-1
 
     - title: Repository location
-      required: [repoUrl]
+      required: [owner, repo_name]
       properties:
-        repoUrl:
-          title: Repository location
+        owner:
+          title: Organization
           type: string
-          ui:field: RepoUrlPicker
-          ui:options:
-            allowedHosts:
-              - github.com
-            allowedOwners:
-              - mvp-glaciar-org
+          description: GitHub organization where the repo will be created
+          default: mvp-glaciar-org
+          enum:
+            - mvp-glaciar-org
+          enumNames:
+            - 'mvp-glaciar-org'
+        repo_name:
+          title: Repository name
+          type: string
+          description: Name of the GitHub repository (will use service_name if empty)
+          default: ${{ parameters.service_name }}
 
   steps:
     - id: fetch
@@ -88,14 +93,14 @@ spec:
           system_prompt: ${{ parameters.system_prompt }}
           bedrock_model: ${{ parameters.bedrock_model }}
           aws_region: ${{ parameters.aws_region }}
-          repo_owner: ${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}
+          repo_owner: ${{ parameters.owner }}
 
     - id: publish
       name: Publish to GitHub
       action: publish:github
       input:
         description: ${{ parameters.description }}
-        repoUrl: ${{ parameters.repoUrl }}
+        repoUrl: github.com?owner=${{ parameters.owner }}&repo=${{ parameters.repo_name }}
         defaultBranch: main
 
     - id: register
