@@ -264,3 +264,24 @@ but hasn't propagated to the git server layer when push happens 17ms later.
 **Note on `${{ secrets.USER_OAUTH_TOKEN }}`**: Removed from templates. This requires the user
 to be authenticated via GitHub OAuth. With `guest: {}` auth enabled, users logging in as guest
 would get an empty token, causing the push to fail regardless of the race condition.
+
+## Fix 6: Monkey-patch push retry in Docker build (THE ACTUAL FIX)
+
+Fixes 1-5 (template config changes) were deployed and tested — **still 404**.
+This confirms the race condition is the sole cause. Config-level changes cannot fix it.
+
+**Solution**: A patch script (`packages/backend/patch-scaffolder-push-retry.js`) that modifies
+`@backstage/plugin-scaffolder-node/dist/actions/gitHelpers.cjs.js` at Docker build time to add
+retry logic around `git.push()`:
+
+- 3 retries max
+- 3 second delay between retries
+- Only retries on 404 errors (other errors throw immediately)
+
+Applied in Dockerfile with:
+```dockerfile
+COPY --chown=node:node packages/backend/patch-scaffolder-push-retry.js ./packages/backend/
+RUN node packages/backend/patch-scaffolder-push-retry.js
+```
+
+This gives GitHub ~3-6 seconds to propagate the new repo to its git servers before giving up.
