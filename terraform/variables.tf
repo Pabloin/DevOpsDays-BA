@@ -37,7 +37,7 @@ variable "availability_zones" {
 variable "domain_name" {
   description = "FQDN for the portal subdomain — a Route 53 hosted zone and ACM certificate will be created for this domain"
   type        = string
-  default     = "portal.glaciar.org"
+  default     = "backstage.glaciar.org"
 }
 
 variable "image_tag" {

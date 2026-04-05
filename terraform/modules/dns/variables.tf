@@ -1,5 +1,5 @@
 variable "domain_name" {
-  description = "FQDN for the portal subdomain (e.g. portal.glaciar.org)"
+  description = "FQDN for the portal subdomain (e.g. backstage.glaciar.org)"
   type        = string
 }
 
