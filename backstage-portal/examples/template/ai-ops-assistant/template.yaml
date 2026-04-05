@@ -73,6 +73,8 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+            allowedOwners:
+              - mvp-glaciar-org
 
   steps:
     - id: fetch
