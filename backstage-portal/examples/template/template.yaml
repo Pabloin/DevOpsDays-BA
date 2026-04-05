@@ -58,7 +58,11 @@ spec:
       input:
         description: This is ${{ parameters.name }}
         repoUrl: ${{ parameters.repoUrl }}
-        defaultBranch: 'main'
+        defaultBranch: main
+        repoVisibility: public
+        protectDefaultBranch: false
+        gitAuthorName: backstage-bot
+        gitAuthorEmail: backstage@glaciar.org
 
     # The final step is to register our new component in the catalog.
     - id: register

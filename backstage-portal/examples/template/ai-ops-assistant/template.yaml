@@ -102,6 +102,10 @@ spec:
         description: ${{ parameters.description }}
         repoUrl: github.com?owner=${{ parameters.owner }}&repo=${{ parameters.repo_name }}
         defaultBranch: main
+        repoVisibility: public
+        protectDefaultBranch: false
+        gitAuthorName: backstage-bot
+        gitAuthorEmail: backstage@glaciar.org
 
     - id: register
       name: Register in catalog
