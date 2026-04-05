@@ -83,7 +83,7 @@ The portal is deployed on AWS using Terraform:
 - **Database**: RDS PostgreSQL
 - **Load Balancer**: Application Load Balancer with HTTPS
 - **Container Registry**: Amazon ECR
-- **DNS**: Route53 (`portal.glaciar.org`)
+- **DNS**: Route53 (`backstage.glaciar.org`)
 - **Networking**: VPC with VPC endpoints (no NAT Gateway)
 - **CI/CD**: GitHub Actions with OIDC
 
@@ -169,7 +169,7 @@ No environment variables required — uses in-memory SQLite and guest auth.
 
 Managed by Terraform and stored in AWS Secrets Manager:
 
-- `APP_BASE_URL` — Portal URL (https://portal.glaciar.org)
+- `APP_BASE_URL` — Portal URL (https://backstage.glaciar.org)
 - `POSTGRES_HOST` — RDS endpoint
 - `POSTGRES_PORT` — Database port (5432)
 - `POSTGRES_USER` — Database user
@@ -210,7 +210,7 @@ yarn install
 - Validate connection string
 
 **GitHub OAuth not working:**
-- Verify callback URL: `https://portal.glaciar.org/api/auth/github/handler/frame`
+- Verify callback URL: `https://backstage.glaciar.org/api/auth/github/handler/frame`
 - Check secrets match GitHub OAuth app settings
 
 ## Contributing

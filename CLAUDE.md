@@ -36,7 +36,7 @@ The Backstage portal is deployed on AWS using:
 - **Database**: RDS PostgreSQL in private subnets
 - **Load Balancer**: Application Load Balancer with HTTPS (ACM certificate)
 - **Container Registry**: ECR repository `backstage-mvp`
-- **DNS**: Route53 hosted zone for `portal.glaciar.org`
+- **DNS**: Route53 hosted zone for `backstage.glaciar.org`
 - **Networking**: VPC endpoints (no NAT Gateway) for cost optimization
 - **CI/CD**: GitHub Actions with OIDC (no long-lived credentials)
 
@@ -66,7 +66,7 @@ export TF_VAR_github_pat="<github-personal-access-token>"
 - `AWS_ROLE_ARN` — IAM role ARN from terraform output `github_actions_role_arn`
 
 #### ECS Task Environment Variables (managed by Terraform via Secrets Manager)
-- `APP_BASE_URL` — https://portal.glaciar.org
+- `APP_BASE_URL` — https://backstage.glaciar.org
 - `POSTGRES_HOST` — RDS endpoint
 - `POSTGRES_PORT` — 5432
 - `POSTGRES_USER` — backstage
@@ -87,7 +87,7 @@ export TF_VAR_github_pat="<github-personal-access-token>"
    - Deploys to ECS and waits for service stability
 3. **ECS** pulls image from ECR and runs on Fargate
 4. **ALB** routes traffic to ECS tasks
-5. **Route53** resolves `portal.glaciar.org` to ALB
+5. **Route53** resolves `backstage.glaciar.org` to ALB
 
 ### Manual Deployment
 
@@ -141,7 +141,7 @@ terraform apply tfplan
 
 ### Domain Configuration
 
-The portal runs at `portal.glaciar.org`:
+The portal runs at `backstage.glaciar.org`:
 1. Route53 hosted zone created by Terraform
 2. NS records must be added to parent domain (`glaciar.org`) registrar
 3. ACM certificate auto-validates via DNS
@@ -160,7 +160,7 @@ The portal runs at `portal.glaciar.org`:
 - Validate connection string in task definition
 
 **GitHub OAuth not working:**
-- Verify callback URL in GitHub OAuth app: `https://portal.glaciar.org/api/auth/github/handler/frame`
+- Verify callback URL in GitHub OAuth app: `https://backstage.glaciar.org/api/auth/github/handler/frame`
 - Check secrets in Secrets Manager match GitHub OAuth app
 
 **DNS not resolving:**

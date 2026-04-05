@@ -1,5 +1,5 @@
 output "portal_nameservers" {
-  description = "Nameservers for the portal.glaciar.org hosted zone — add these as an NS record for portal.glaciar.org in the registrar account to complete subdomain delegation"
+  description = "Nameservers for the backstage.glaciar.org hosted zone — add these as an NS record for backstage.glaciar.org in the parent glaciar.org hosted zone (AWS account ***8689) to complete subdomain delegation"
   value       = module.dns.name_servers
 }
 
