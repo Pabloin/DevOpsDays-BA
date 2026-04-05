@@ -54,4 +54,14 @@ Build the Backstage scaffolder template and all generated app content files. Wor
   - [x] 6.1 Create branch `feature/08-ai-ops-assistant-template`
   - [x] 6.2 Commit all template files
   - [x] 6.3 Push and merge to main (triggers CI/CD deploy)
-  - [ ] 6.4 Verify template appears in Backstage Create page
+  - [x] 6.4 Verify template appears in Backstage Create page
+
+- [x] 7. Fix scaffolder push 404 (PR #5, PR #6)
+  - [x] 7.1 Diagnosed: `publish:github` uses user's OAuth token for git push, not integration PAT
+  - [x] 7.2 Root cause: GitHub OAuth provider missing `additionalScopes: [repo]`
+  - [x] 7.3 Added `additionalScopes: [repo]` to GitHub auth in app-config.yaml and app-config.production.yaml
+  - [x] 7.4 Added `repoVisibility: public`, `protectDefaultBranch: false`, `gitAuthorName/Email` to templates
+  - [x] 7.5 Added push retry patch (`patch-scaffolder-push-retry.js`) for GitHub race condition
+  - [x] 7.6 Added `scaffolder.defaultAuthor` in app-config.yaml
+  - [ ] 7.7 Deploy and verify scaffolder push succeeds (users must re-login for new OAuth scope)
+  - _See: `ERROR_REPO_PUSH.md` for full diagnosis_

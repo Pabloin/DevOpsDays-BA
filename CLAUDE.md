@@ -251,23 +251,57 @@ If scaffolder still fails, the problem is NOT the GitHub token.
 
 **Scaffolder creates repo but push fails with 404:**
 
-This happens when organization base permissions are too restrictive. The token can create repos (via `admin:org` permission) but cannot push to them (requires write access).
+This is a multi-layered issue. Three things must all be correct:
 
-**Fix: Allow organization members to write to repos**
+**1. GitHub OAuth must have `repo` scope (ROOT CAUSE)**
+
+Backstage's `publish:github` action uses the **user's OAuth token** for git push, NOT the
+integration PAT from `app-config.yaml`. The integration PAT is only used for the GitHub API
+call (creating the repo via Octokit).
+
+Without `additionalScopes: [repo]` in the GitHub auth provider config, the user's OAuth token
+can only read profile info — it cannot push to repos. GitHub returns 404 (not 403) for auth
+failures on private repos.
+
+Fix in `app-config.yaml` and `app-config.production.yaml`:
+```yaml
+auth:
+  providers:
+    github:
+      production:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        additionalScopes:
+          - repo
+```
+
+**Important**: After deploying, users must **log out and log back in** to get a new OAuth token
+with the `repo` scope. Existing sessions won't have the new scope.
+
+**2. Organization base permissions must be "Write"**
 
 1. Go to: `https://github.com/orgs/mvp-glaciar-org/settings/member_privileges`
-2. Under "Base permissions" section, change the dropdown from "Read" to "Write"
+2. Under "Base permissions", change from "Read" to "Write"
 3. Click "Save"
 
-This allows members (and tokens with member-level access) to push to repos in the organization.
+Why: Even with a valid token, GitHub checks org base permissions on `git push`.
+If base = "Read", push is rejected with 404.
 
-**Why this happens:**
-- Token has `repo` and `admin:org` scopes → can create repos via API
-- But when doing `git push`, GitHub checks organization base permissions
-- If base permissions = "Read", push is rejected with 404 "Repository not found"
-- Changing to "Write" allows push operations
+**3. Race condition workaround (retry patch)**
 
-**Alternative (not recommended for scaffolder):**
-- Keep base permissions as "Read"
-- Manually add the GitHub App/token as a collaborator with write access to each repo
-- Not practical for scaffolder which creates repos dynamically
+GitHub API confirms repo creation but git servers need ~3s to propagate. A patch script
+(`packages/backend/patch-scaffolder-push-retry.js`) adds retry logic (3 attempts, 3s delay)
+to `isomorphic-git.push()` at Docker build time. Applied in the Dockerfile.
+
+**How `publish:github` credential flow works:**
+```
+publish:github handler
+  → getOctokitOptions() → uses integration PAT for API calls
+  → creates repo via Octokit (GitHub REST API) → uses PAT ✓
+  → initRepoPushAndProtect(remoteUrl, octokitOptions.auth, ...)
+    → initRepoAndPush({ auth: { username: "x-access-token", password } })
+      → isomorphic-git.push() with onAuth callback
+        → uses USER's OAuth token if available, falls back to integration PAT
+```
+
+**Full troubleshooting documented in**: `ERROR_REPO_PUSH.md`

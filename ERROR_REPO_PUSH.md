@@ -285,3 +285,25 @@ RUN node packages/backend/patch-scaffolder-push-retry.js
 ```
 
 This gives GitHub ~3-6 seconds to propagate the new repo to its git servers before giving up.
+
+## Fix 7: Add `repo` scope to GitHub OAuth (THE ROOT CAUSE)
+
+After testing Fix 6 (retry patch) and still getting 404, the real root cause was identified:
+
+**The GitHub OAuth provider was not requesting `repo` scope.**
+
+Backstage's `publish:github` action prefers the **user's OAuth token** (`USER_OAUTH_TOKEN`)
+over the integration PAT for git push operations. But the default GitHub OAuth config only
+requests basic profile scopes — no `repo` access.
+
+So even though `Pabloin` was logged in via GitHub OAuth, the OAuth token could NOT push
+to repos. GitHub returns 404 (not 403) for auth failures on private repos.
+
+**The integration PAT** (in `app-config.yaml`) has `repo` + `admin:org` scopes and works for
+**creating** repos via Octokit/GitHub API, but the **git push** uses the user's OAuth token.
+
+**Fix**: Add `additionalScopes: [repo]` to the GitHub auth provider in both
+`app-config.yaml` and `app-config.production.yaml`.
+
+**Important**: After deploying, users must **log out and log back in** to get a new
+OAuth token with the `repo` scope. Existing sessions won't have the new scope.

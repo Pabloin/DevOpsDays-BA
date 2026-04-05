@@ -25,6 +25,8 @@ auth:
       production:
         clientId: ${AUTH_GITHUB_CLIENT_ID}
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        additionalScopes:
+          - repo
         signIn:
           resolvers:
             - resolver: usernameMatchingUserEntityName
