@@ -86,7 +86,9 @@ auth:
             - resolver: usernameMatchingUserEntityName
 
 scaffolder:
-  # see https://backstage.io/docs/features/software-templates/configuration for software template options
+  defaultAuthor:
+    name: backstage-bot
+    email: backstage@glaciar.org
 
 catalog:
   import:

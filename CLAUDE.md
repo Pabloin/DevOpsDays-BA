@@ -248,3 +248,26 @@ If scaffolder still fails, the problem is NOT the GitHub token.
 - Verify NS records in parent domain registrar
 - Check Route53 hosted zone has correct A record alias to ALB
 - Wait for DNS propagation (up to 48 hours)
+
+**Scaffolder creates repo but push fails with 404:**
+
+This happens when organization base permissions are too restrictive. The token can create repos (via `admin:org` permission) but cannot push to them (requires write access).
+
+**Fix: Allow organization members to write to repos**
+
+1. Go to: `https://github.com/orgs/mvp-glaciar-org/settings/member_privileges`
+2. Under "Base permissions" section, change the dropdown from "Read" to "Write"
+3. Click "Save"
+
+This allows members (and tokens with member-level access) to push to repos in the organization.
+
+**Why this happens:**
+- Token has `repo` and `admin:org` scopes → can create repos via API
+- But when doing `git push`, GitHub checks organization base permissions
+- If base permissions = "Read", push is rejected with 404 "Repository not found"
+- Changing to "Write" allows push operations
+
+**Alternative (not recommended for scaffolder):**
+- Keep base permissions as "Read"
+- Manually add the GitHub App/token as a collaborator with write access to each repo
+- Not practical for scaffolder which creates repos dynamically
