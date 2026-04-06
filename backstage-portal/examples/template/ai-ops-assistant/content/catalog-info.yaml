@@ -7,6 +7,10 @@ metadata:
   annotations:
     backstage.io/techdocs-ref: dir:.
     github.com/project-slug: ${{ values.repo_owner }}/${{ values.service_name }}
+  links:
+    - url: https://console.aws.amazon.com/cloudwatch/home?region=${{ values.aws_region }}#logsV2:log-groups
+      title: CloudWatch Logs
+      icon: dashboard
 spec:
   type: service
   lifecycle: experimental
