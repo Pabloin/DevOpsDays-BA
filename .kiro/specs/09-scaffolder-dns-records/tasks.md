@@ -6,54 +6,33 @@ Enhance the AI Ops Assistant template to automatically create Route53 DNS record
 
 ## Tasks
 
-- [ ] 1. Update template form to capture custom domain
-  - [ ] 1.1 Add "Domain configuration" section to template.yaml
-    - Optional parameter: `custom_domain` (pattern: `*.backstage.glaciar.org` or empty)
-    - Default: empty (DNS setup is optional)
-    - _Requirements: 2.1_
-  - [ ] 1.2 Add conditional scaffolder step: `create-dns-record` (only if custom_domain provided)
-    - _Requirements: 1.1_
+- [x] 1. Update template form to capture DNS option
+  - [x] 1.1 Add `create_dns` boolean parameter (default: true) to template.yaml
+  - [x] 1.2 Add conditional `aws:route53:create-dns-record` step after catalog registration
 
-- [ ] 2. Create custom scaffolder action (or Lambda webhook)
-  - [ ] 2.1 Design custom action handler or AWS Lambda
-    - Receives: domain name, service name, repository URL
-    - Creates Route53 A alias record → ALB
-    - Updates ACM certificate with new SAN
-    - _Requirements: 1.2, 1.3, 1.4_
-  - [ ] 2.2 Integrate with Backstage (plugin or custom action)
-    - OR set up Lambda + API Gateway webhook for GitHub Actions to call
-    - _Requirements: 1.1_
+- [x] 2. Create custom scaffolder action
+  - [x] 2.1 Create `@internal/plugin-scaffolder-backend-module-route53` plugin
+    - Action ID: `aws:route53:create-dns-record`
+    - Reads Route53 config from env vars (ROUTE53_HOSTED_ZONE_ID, ALB_DNS_NAME, etc.)
+    - Uses AWS SDK Route53Client to UPSERT A alias record → ALB
+  - [x] 2.2 Register plugin in backend (`packages/backend/src/index.ts`)
 
-- [ ] 3. Update root Terraform to accept dynamic SANs
-  - [ ] 3.1 Modify `terraform/modules/dns/variables.tf`
-    - Add variable: `additional_domains = []` (list of strings)
-    - _Requirements: 1.4_
-  - [ ] 3.2 Modify `aws_acm_certificate.main`
-    - Set `subject_alternative_names = var.additional_domains`
-    - _Requirements: 1.4, 1.5_
-  - [ ] 3.3 Wire variable through root module
-    - Update `terraform/main.tf` to pass SANs from tfvars or API
-    - _Requirements: 1.4_
+- [x] 3. Update Terraform infrastructure
+  - [x] 3.1 Add wildcard SAN to ACM certificate (`*.backstage.glaciar.org`)
+  - [x] 3.2 Add Route53 IAM permissions to ECS task role
+  - [x] 3.3 Pass Route53/ALB env vars to ECS task definition
+  - [x] 3.4 Wire new variables through root module (main.tf → ecs module)
+  - [x] 3.5 Add DNS module outputs (hosted_zone_arn, alb_dns_name, alb_zone_id)
 
 - [ ] 4. Test end-to-end
-  - [ ] 4.1 Scaffold a test app with custom_domain = "demo3.backstage.glaciar.org"
-    - Scaffolder creates DNS record
-    - Certificate updated with new SAN
-    - _Requirements: 1.2, 1.4, 1.5_
-  - [ ] 4.2 Verify DNS resolution: `dig demo3.backstage.glaciar.org`
-    - Should resolve to ALB IP
-    - _Requirements: 1.3_
-  - [ ] 4.3 Verify HTTPS: `curl -I https://demo3.backstage.glaciar.org`
-    - 200/302, valid certificate for demo3 domain
-    - _Requirements: 1.3_
+  - [ ] 4.1 Run `terraform plan` to verify infrastructure changes
+  - [ ] 4.2 Apply Terraform (wildcard cert + IAM permissions)
+  - [ ] 4.3 Deploy Backstage with new plugin
+  - [ ] 4.4 Scaffold a test app with DNS enabled
+  - [ ] 4.5 Verify: `dig {service_name}.backstage.glaciar.org` resolves to ALB
+  - [ ] 4.6 Verify: `curl -I https://{service_name}.backstage.glaciar.org` returns valid response
 
-- [ ] 5. Update template documentation
-  - [ ] 5.1 Add section to template README: "Custom domains"
-    - Explain the optional domain parameter
-    - Note DNS propagation delay (5-10 min)
-    - _Requirements: 2.3, 1.5_
-
-- [ ] 6. Commit and merge
-  - [ ] 6.1 Commit all changes to feature/09-scaffolder-dns-records
-  - [ ] 6.2 Create PR to main
-  - [ ] 6.3 Merge and verify template works end-to-end
+- [ ] 5. Commit and merge
+  - [ ] 5.1 Commit all changes to feature/09-scaffolder-dns-records
+  - [ ] 5.2 Create PR to main
+  - [ ] 5.3 Merge and verify template works end-to-end

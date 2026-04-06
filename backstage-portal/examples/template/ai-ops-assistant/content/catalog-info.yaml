@@ -7,6 +7,20 @@ metadata:
   annotations:
     backstage.io/techdocs-ref: dir:.
     github.com/project-slug: ${{ values.repo_owner }}/${{ values.service_name }}
+  tags:
+    - ai
+    - bedrock
+    - ${{ values.bedrock_model }}
+  links:
+    - url: https://${{ values.service_name }}.backstage.glaciar.org
+      title: Service URL
+      icon: web
+    - url: https://github.com/${{ values.repo_owner }}/${{ values.service_name }}
+      title: GitHub Repository
+      icon: github
+    - url: https://console.aws.amazon.com/cloudwatch/home?region=${{ values.aws_region }}#logsV2:log-groups
+      title: CloudWatch Logs
+      icon: dashboard
 spec:
   type: service
   lifecycle: experimental

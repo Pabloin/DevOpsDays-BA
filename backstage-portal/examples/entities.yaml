@@ -7,6 +7,31 @@ metadata:
 spec:
   owner: guests
 ---
+# Backstage Portal itself
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: backstage-portal
+  title: Backstage Developer Portal
+  description: Internal developer portal for My Company
+  annotations:
+    github.com/project-slug: mvp-glaciar-org/devopsdaysba
+  links:
+    - url: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/$252Fecs$252Fbackstage-mvp-backstage
+      title: Backend Logs (CloudWatch)
+      icon: dashboard
+    - url: https://console.aws.amazon.com/ecs/v2/clusters/backstage-mvp-cluster/services/backstage-mvp-service/health?region=us-east-1
+      title: ECS Service
+      icon: cloud
+    - url: https://backstage.glaciar.org
+      title: Production Portal
+      icon: web
+spec:
+  type: service
+  lifecycle: production
+  owner: Pabloin
+  system: examples
+---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-component
 apiVersion: backstage.io/v1alpha1
 kind: Component

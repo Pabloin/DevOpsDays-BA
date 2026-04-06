@@ -10,7 +10,7 @@
 ## Terraform
 
 - Always run from `terraform/` directory
-- Source credentials before apply: `source .env.prod && AWS_PROFILE=chile terraform apply`
+- Source credentials before apply: `source .env.glaciar.org && AWS_PROFILE=chile terraform apply`
 - Never commit `terraform.tfvars` or `.env*` files
 
 ## AWS
@@ -123,7 +123,7 @@ To modify infrastructure:
 
 ```bash
 cd terraform
-source .env.prod
+source .env.glaciar.org
 export AWS_PROFILE=chile
 
 # Plan changes

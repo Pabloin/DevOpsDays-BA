@@ -80,6 +80,11 @@ spec:
           type: string
           description: Name of the GitHub repository (will use service_name if empty)
           default: ${{ parameters.service_name }}
+        create_dns:
+          title: Create DNS record
+          type: boolean
+          description: Create {service_name}.backstage.glaciar.org pointing to the portal ALB
+          default: true
 
   steps:
     - id: fetch
@@ -114,6 +119,13 @@ spec:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: /catalog-info.yaml
 
+    - id: create-dns
+      name: Create DNS record
+      if: ${{ parameters.create_dns }}
+      action: aws:route53:create-dns-record
+      input:
+        serviceName: ${{ parameters.service_name }}
+
   output:
     links:
       - title: Repository
@@ -121,3 +133,5 @@ spec:
       - title: Open in Backstage catalog
         icon: catalog
         entityRef: ${{ steps.register.output.entityRef }}
+      - title: Service URL
+        url: https://${{ parameters.service_name }}.backstage.glaciar.org
