@@ -104,7 +104,7 @@ Pushing to `main` triggers the GitHub Actions workflow:
 
 ```bash
 cd terraform
-source .env.prod
+source .env.glaciar.org
 export AWS_PROFILE=chile
 
 terraform plan -out=tfplan

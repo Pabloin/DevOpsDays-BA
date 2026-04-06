@@ -66,7 +66,7 @@ aws ecs update-service --cluster backstage-mvp-cluster \
 
 ```bash
 cd terraform
-source .env.prod
+source .env.glaciar.org
 terraform plan
 terraform apply
 ```
