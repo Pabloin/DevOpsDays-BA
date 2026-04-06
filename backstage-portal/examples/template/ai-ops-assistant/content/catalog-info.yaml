@@ -24,4 +24,4 @@ metadata:
 spec:
   type: service
   lifecycle: experimental
-  owner: ${{ values.repo_owner }}
+  owner: group:default/guests
