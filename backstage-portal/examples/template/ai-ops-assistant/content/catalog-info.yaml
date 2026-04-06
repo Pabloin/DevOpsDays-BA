@@ -10,7 +10,6 @@ metadata:
   tags:
     - ai
     - bedrock
-    - ${{ values.bedrock_model }}
   links:
     - url: https://${{ values.service_name }}.backstage.glaciar.org
       title: Service URL
