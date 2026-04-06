@@ -63,5 +63,5 @@ Build the Backstage scaffolder template and all generated app content files. Wor
   - [x] 7.4 Added `repoVisibility: public`, `protectDefaultBranch: false`, `gitAuthorName/Email` to templates
   - [x] 7.5 Added push retry patch (`patch-scaffolder-push-retry.js`) for GitHub race condition
   - [x] 7.6 Added `scaffolder.defaultAuthor` in app-config.yaml
-  - [ ] 7.7 Deploy and verify scaffolder push succeeds (users must re-login for new OAuth scope)
+  - [x] 7.7 Deploy and verify scaffolder push succeeds (confirmed 2026-04-06, retry 2/3 works)
   - _See: `ERROR_REPO_PUSH.md` for full diagnosis_

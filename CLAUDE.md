@@ -304,4 +304,8 @@ publish:github handler
         → uses USER's OAuth token if available, falls back to integration PAT
 ```
 
+**Status: RESOLVED** (2026-04-06). All three fixes are deployed and confirmed working.
+First push gets 404, retry succeeds after 3s delay. Scaffolder creates repo, pushes code,
+and registers in catalog successfully. See logs: attempt 1/3 fails, attempt 2/3 succeeds.
+
 **Full troubleshooting documented in**: `ERROR_REPO_PUSH.md`
