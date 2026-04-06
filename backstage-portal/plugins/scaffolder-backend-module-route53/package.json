@@ -4,9 +4,18 @@
   "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "backstage": {
+    "role": "backend-plugin-module"
+  },
+  "scripts": {
+    "build": "backstage-cli package build"
+  },
   "dependencies": {
     "@aws-sdk/client-route-53": "^3.700.0",
     "@backstage/backend-plugin-api": "^1.8.0",
     "@backstage/plugin-scaffolder-node": "^0.7.0"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.36.0"
   }
 }
