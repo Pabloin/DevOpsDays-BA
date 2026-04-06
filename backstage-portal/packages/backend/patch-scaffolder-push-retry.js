@@ -4,18 +4,24 @@
  * is created via API but not yet available on git servers.
  *
  * Applied during Docker build via Dockerfile.
+ * Patches ALL copies of gitHelpers.cjs.js (top-level and nested node_modules).
  */
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
-const filePath = path.join(
-  __dirname,
-  '../../node_modules/@backstage/plugin-scaffolder-node/dist/actions/gitHelpers.cjs.js',
-);
+// Find ALL copies of gitHelpers.cjs.js in node_modules
+const findCmd = "find /app/node_modules -path '*/plugin-scaffolder-node/dist/actions/gitHelpers.cjs.js' -type f";
+let files;
+try {
+  files = execSync(findCmd, { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+} catch {
+  // Fallback to known path if find fails
+  files = [
+    path.join(__dirname, '../../node_modules/@backstage/plugin-scaffolder-node/dist/actions/gitHelpers.cjs.js'),
+  ];
+}
 
-let content = fs.readFileSync(filePath, 'utf8');
-
-// Replace the direct push call with a retry loop that has a delay
 const original = `  await git$1.push({
     dir,
     remote: "origin",
@@ -49,12 +55,27 @@ const patched = `  // Retry push with delay to work around GitHub race condition
   }
   return { commitHash };`;
 
-if (!content.includes(original)) {
-  console.error('ERROR: Could not find the expected code to patch in gitHelpers.cjs.js');
-  console.error('The file may have been updated. Check the patch script.');
-  process.exit(1);
+let patchedCount = 0;
+for (const filePath of files) {
+  try {
+    let content = fs.readFileSync(filePath, 'utf8');
+    if (content.includes(original)) {
+      content = content.replace(original, patched);
+      fs.writeFileSync(filePath, content, 'utf8');
+      patchedCount++;
+      console.log(`Patched: ${filePath}`);
+    } else if (content.includes('Retry push with delay')) {
+      console.log(`Already patched: ${filePath}`);
+    } else {
+      console.warn(`WARNING: Could not find expected code in ${filePath}`);
+    }
+  } catch (err) {
+    console.error(`ERROR patching ${filePath}: ${err.message}`);
+  }
 }
 
-content = content.replace(original, patched);
-fs.writeFileSync(filePath, content, 'utf8');
-console.log('Successfully patched gitHelpers.cjs.js with push retry logic (3 retries, 3s delay)');
+if (patchedCount === 0) {
+  console.error('ERROR: No files were patched! The push retry will not work.');
+  process.exit(1);
+}
+console.log(`Successfully patched ${patchedCount} file(s) with push retry logic (3 retries, 3s delay)`);
