@@ -134,6 +134,12 @@ module "ecs" {
 
   app_base_url = "https://${var.domain_name}"
 
+  route53_hosted_zone_arn = module.dns.hosted_zone_arn
+  route53_hosted_zone_id  = module.dns.hosted_zone_id
+  route53_domain_name     = var.domain_name
+  alb_dns_name            = module.dns.alb_dns_name
+  alb_hosted_zone_id      = module.dns.alb_zone_id
+
   environment = var.environment
   project     = var.project
 }

@@ -48,13 +48,31 @@ resource "aws_iam_role_policy" "execution_secrets" {
   policy = data.aws_iam_policy_document.secrets_access.json
 }
 
-# ─── IAM: Task Role (MVP placeholder) ────────────────────────────────────────
+# ─── IAM: Task Role ──────────────────────────────────────────────────────────
 
 resource "aws_iam_role" "task" {
   name               = "${local.name_prefix}-ecs-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role.json
 
   tags = merge(local.tags, { Name = "${local.name_prefix}-ecs-task-role" })
+}
+
+data "aws_iam_policy_document" "route53_access" {
+  statement {
+    sid = "AllowRoute53RecordManagement"
+    actions = [
+      "route53:ChangeResourceRecordSets",
+      "route53:GetHostedZone",
+      "route53:ListResourceRecordSets",
+    ]
+    resources = [var.route53_hosted_zone_arn]
+  }
+}
+
+resource "aws_iam_role_policy" "task_route53" {
+  name   = "route53-dns-management"
+  role   = aws_iam_role.task.id
+  policy = data.aws_iam_policy_document.route53_access.json
 }
 
 # ─── Security Group (passed in from root to avoid circular dep with RDS) ─────
@@ -145,6 +163,22 @@ resource "aws_ecs_task_definition" "main" {
         {
           name  = "APP_BASE_URL"
           value = var.app_base_url
+        },
+        {
+          name  = "ROUTE53_HOSTED_ZONE_ID"
+          value = var.route53_hosted_zone_id
+        },
+        {
+          name  = "ROUTE53_DOMAIN_NAME"
+          value = var.route53_domain_name
+        },
+        {
+          name  = "ALB_DNS_NAME"
+          value = var.alb_dns_name
+        },
+        {
+          name  = "ALB_HOSTED_ZONE_ID"
+          value = var.alb_hosted_zone_id
         }
       ]
 

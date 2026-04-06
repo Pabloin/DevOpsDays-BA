@@ -55,6 +55,31 @@ variable "app_base_url" {
   default     = ""
 }
 
+variable "route53_hosted_zone_arn" {
+  description = "ARN of the Route53 hosted zone for DNS record management"
+  type        = string
+}
+
+variable "route53_hosted_zone_id" {
+  description = "ID of the Route53 hosted zone (passed as env var to Backstage)"
+  type        = string
+}
+
+variable "route53_domain_name" {
+  description = "Base domain name for scaffolded apps (e.g. backstage.glaciar.org)"
+  type        = string
+}
+
+variable "alb_dns_name" {
+  description = "DNS name of the ALB for Route53 alias records"
+  type        = string
+}
+
+variable "alb_hosted_zone_id" {
+  description = "Canonical hosted zone ID of the ALB"
+  type        = string
+}
+
 variable "cpu" {
   description = "CPU units for the ECS task (1 vCPU = 1024)"
   type        = number

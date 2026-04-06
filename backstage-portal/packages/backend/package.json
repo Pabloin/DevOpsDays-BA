@@ -43,6 +43,7 @@
     "@backstage/plugin-search-backend-node": "^1.4.2",
     "@backstage/plugin-signals-backend": "^0.3.13",
     "@backstage/plugin-techdocs-backend": "^2.1.6",
+    "@internal/plugin-scaffolder-backend-module-route53": "link:../../plugins/scaffolder-backend-module-route53",
     "app": "link:../app",
     "better-sqlite3": "^12.0.0",
     "node-gyp": "^10.0.0",
