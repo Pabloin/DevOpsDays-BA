@@ -47,11 +47,12 @@ resource "aws_acm_certificate" "main" {
 
 resource "aws_route53_record" "cert_validation" {
   for_each = {
-    for dvo in aws_acm_certificate.main.domain_validation_options : dvo.resource_record_name => {
+    for dvo in aws_acm_certificate.main.domain_validation_options :
+    dvo.resource_record_name => {
       name   = dvo.resource_record_name
       type   = dvo.resource_record_type
       record = dvo.resource_record_value
-    }...
+    } if dvo.domain_name == var.domain_name
   }
 
   zone_id = aws_route53_zone.main.zone_id
