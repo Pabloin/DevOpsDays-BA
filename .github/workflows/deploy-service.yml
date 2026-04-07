@@ -1,0 +1,156 @@
+name: Deploy Scaffolded Service to ECS
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_name:
+        description: 'Service name (repo name in mvp-glaciar-org)'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+      bedrock_model_id:
+        description: 'AWS Bedrock model ID'
+        required: true
+        type: string
+        default: 'anthropic.claude-3-haiku-20240307-v1:0'
+      image_tag:
+        description: 'Docker image tag'
+        required: false
+        type: string
+        default: 'latest'
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.service_name }} → ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+
+    env:
+      AWS_REGION: us-east-1
+
+    steps:
+      - name: Checkout infra repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: infra
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Checkout service repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: mvp-glaciar-org/${{ inputs.service_name }}
+          token: ${{ secrets.GH_PAT }}
+          path: service
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        with:
+          role-to-assume: ${{ secrets.TERRAFORM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269ef065 # v3.1.2
+        with:
+          terraform_version: "~1.10"
+          terraform_wrapper: false
+
+      - name: Register service in services.tf (idempotent)
+        working-directory: infra
+        run: |
+          MODULE_NAME="svc_$(echo '${{ inputs.service_name }}' | tr '-' '_')_${{ inputs.environment }}"
+
+          if grep -q "module \"${MODULE_NAME}\"" terraform/services.tf; then
+            echo "Module ${MODULE_NAME} already registered, skipping."
+          else
+            cat >> terraform/services.tf << EOF
+
+          module "${MODULE_NAME}" {
+            source = "./modules/deploy-service"
+
+            service_name          = "${{ inputs.service_name }}"
+            environment           = "${{ inputs.environment }}"
+            vpc_id                = module.vpc.vpc_id
+            private_subnet_ids    = module.vpc.private_subnet_ids
+            cluster_arn           = module.ecs_env_${{ inputs.environment }}.cluster_arn
+            alb_listener_arn      = module.ecs_env_${{ inputs.environment }}.alb_listener_arn_https
+            alb_security_group_id = module.ecs_env_${{ inputs.environment }}.alb_security_group_id
+            bedrock_model_id      = "${{ inputs.bedrock_model_id }}"
+            image_tag             = "${{ inputs.image_tag }}"
+            project               = "backstage"
+          }
+          EOF
+
+            git config user.email "backstage-bot@glaciar.org"
+            git config user.name "backstage-bot"
+            git add terraform/services.tf
+            git commit -m "feat: register ${{ inputs.service_name }} in ${{ inputs.environment }}"
+            git push
+          fi
+
+      - name: Terraform init
+        working-directory: infra/terraform
+        run: terraform init
+        env:
+          TF_VAR_github_oauth_client_id: ${{ secrets.TF_VAR_GITHUB_OAUTH_CLIENT_ID }}
+          TF_VAR_github_oauth_client_secret: ${{ secrets.TF_VAR_GITHUB_OAUTH_CLIENT_SECRET }}
+          TF_VAR_github_pat: ${{ secrets.TF_VAR_GITHUB_PAT }}
+
+      - name: Terraform apply (provision AWS resources for this service)
+        working-directory: infra/terraform
+        run: |
+          MODULE_NAME="svc_$(echo '${{ inputs.service_name }}' | tr '-' '_')_${{ inputs.environment }}"
+          terraform apply -auto-approve -target=module.${MODULE_NAME}
+        env:
+          TF_VAR_github_oauth_client_id: ${{ secrets.TF_VAR_GITHUB_OAUTH_CLIENT_ID }}
+          TF_VAR_github_oauth_client_secret: ${{ secrets.TF_VAR_GITHUB_OAUTH_CLIENT_SECRET }}
+          TF_VAR_github_pat: ${{ secrets.TF_VAR_GITHUB_PAT }}
+
+      - name: Get ECR repository URL
+        id: ecr
+        working-directory: infra/terraform
+        run: |
+          MODULE_NAME="svc_$(echo '${{ inputs.service_name }}' | tr '-' '_')_${{ inputs.environment }}"
+          ECR_URL=$(terraform output -raw ${MODULE_NAME}_ecr_repository_url 2>/dev/null || \
+            terraform output -json | jq -r ".${MODULE_NAME}_ecr_repository_url.value // empty")
+          # Fallback: construct from account + region
+          if [ -z "$ECR_URL" ]; then
+            ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+            ECR_URL="${ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ inputs.service_name }}-${{ inputs.environment }}"
+          fi
+          echo "url=${ECR_URL}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        working-directory: service
+        run: |
+          IMAGE="${{ steps.ecr.outputs.url }}:${{ inputs.image_tag }}"
+          docker build -t "${IMAGE}" .
+          docker push "${IMAGE}"
+
+      - name: Force new ECS deployment
+        run: |
+          CLUSTER="backstage-apps-${{ inputs.environment }}"
+          SERVICE="${{ inputs.service_name }}-${{ inputs.environment }}"
+          aws ecs update-service \
+            --cluster "${CLUSTER}" \
+            --service "${SERVICE}" \
+            --force-new-deployment
+          aws ecs wait services-stable \
+            --cluster "${CLUSTER}" \
+            --services "${SERVICE}"
+
+      - name: Service URL
+        run: |
+          echo "✅ Service deployed!"
+          echo "URL: https://${{ inputs.service_name }}.${{ inputs.environment }}.backstage.glaciar.org"

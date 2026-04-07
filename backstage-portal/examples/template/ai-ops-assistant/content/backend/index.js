@@ -27,6 +27,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check for ALB (must come before static file serving)
+app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+
+// Serve built React frontend in production (static files in public/)
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'public')));
+}
+
 // Build request body based on model provider
 function buildRequestBody(messages, stream = false) {
   const isAnthropic = MODEL_ID.startsWith('anthropic.');
