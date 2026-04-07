@@ -17,8 +17,8 @@
 
 ## Phase 3: Route53 DNS Validation
 - [ ] 3.1 Create helper function `dns_verify_wildcards()` in reflection-test.sh
-- [ ] 3.2 Query Route53 for `*.dev.glaciar.org` wildcard record
-- [ ] 3.3 Query Route53 for `*.prod.glaciar.org` wildcard record
+- [ ] 3.2 Query Route53 for `*.dev.backstage.glaciar.org` wildcard record
+- [ ] 3.3 Query Route53 for `*.prod.backstage.glaciar.org` wildcard record
 - [ ] 3.4 Test DNS resolution with `nslookup` on test subdomain
 - [ ] 3.5 Verify resolved IP matches ALB IP
 - [ ] 3.6 Log results and detect failures

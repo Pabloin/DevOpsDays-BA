@@ -107,7 +107,7 @@ Run the test but keep artifacts for inspection:
 
 ### Phase 3: Route53 DNS (2 min)
 - ✅ Queries Route53 hosted zone
-- ✅ Verifies wildcard records (`*.dev.glaciar.org`, `*.prod.glaciar.org`)
+- ✅ Verifies wildcard records (`*.dev.backstage.glaciar.org`, `*.prod.backstage.glaciar.org`)
 - ✅ Tests DNS resolution
 - ✅ Confirms ALB responds to HTTPS requests (404 expected)
 
@@ -239,7 +239,7 @@ aws route53 list-hosted-zones --profile chile
 # Verify wildcard records exist
 aws route53 list-resource-record-sets \
   --hosted-zone-id <ZONE_ID> \
-  --profile chile | grep -A5 "*.dev.glaciar.org"
+  --profile chile | grep -A5 "*.dev.backstage.glaciar.org"
 
 # Test manual DNS resolution
 nslookup test.dev.glaciar.org

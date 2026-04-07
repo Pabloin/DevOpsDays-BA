@@ -41,8 +41,8 @@ Validate that the DevOpsDays BA platform (specs 12–13) is fully functional by 
 - Both clusters should exist (may have 0 tasks if no services deployed yet)
 
 **2.3** Verify Route53 DNS setup
-- `*.dev.glaciar.org` wildcard record exists and points to dev ALB
-- `*.prod.glaciar.org` wildcard record exists and points to prod ALB
+- `*.dev.backstage.glaciar.org` wildcard record exists and points to dev ALB
+- `*.prod.backstage.glaciar.org` wildcard record exists and points to prod ALB
 - Query a test subdomain (e.g., `test-nslookup.dev.glaciar.org`) and verify it resolves to ALB IP
 
 **2.4** Verify ALB is accepting traffic

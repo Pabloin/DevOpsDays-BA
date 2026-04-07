@@ -136,7 +136,7 @@ aws elbv2 describe-listeners --load-balancer-arn <ALB_ARN> \
 aws route53 list-resource-record-sets \
   --hosted-zone-id Z1234567890ABC \
   --profile chile --region us-east-1 \
-  --query 'ResourceRecordSets[?Name==`*.dev.glaciar.org.`]'
+  --query 'ResourceRecordSets[?Name==`*.dev.backstage.glaciar.org.`]'
 
 # Test DNS resolution
 nslookup test-nslookup.dev.glaciar.org
@@ -149,7 +149,7 @@ dig +short test-nslookup.dev.glaciar.org | grep -q $ALB_IP
 ```
 
 **Pass Conditions:**
-- Both wildcard records exist (`*.dev.glaciar.org` and `*.prod.glaciar.org`)
+- Both wildcard records exist (`*.dev.backstage.glaciar.org` and `*.prod.backstage.glaciar.org`)
 - DNS resolves test subdomains to ALB
 - nslookup works without errors
 

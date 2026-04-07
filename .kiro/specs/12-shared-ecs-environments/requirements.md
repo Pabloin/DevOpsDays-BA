@@ -13,13 +13,13 @@ Create a shared ECS deployment platform (dev and prod) where all Backstage-scaff
 **1.1** Each environment (dev, prod) must have:
 - A dedicated ECS Fargate cluster
 - An Application Load Balancer (ALB) with HTTPS (ACM certificate)
-- A wildcard ACM certificate for `*.dev.glaciar.org` and `*.prod.glaciar.org`
+- A wildcard ACM certificate for `*.dev.backstage.glaciar.org` and `*.prod.backstage.glaciar.org`
 - A Route53 hosted zone or records under `glaciar.org` for routing
 - A shared VPC (or reuse the existing Backstage VPC for cost savings)
 
-**1.2** The dev environment must serve traffic at `*.dev.glaciar.org` (e.g., `my-ai-app.dev.glaciar.org`).
+**1.2** The dev environment must serve traffic at `*.dev.backstage.glaciar.org` (e.g., `my-ai-app.dev.glaciar.org`).
 
-**1.3** The prod environment must serve traffic at `*.prod.glaciar.org` (e.g., `my-ai-app.prod.glaciar.org`).
+**1.3** The prod environment must serve traffic at `*.prod.backstage.glaciar.org` (e.g., `my-ai-app.prod.glaciar.org`).
 
 **1.4** Each environment must support multiple independent services running simultaneously as separate ECS services/tasks behind the shared ALB, using ALB host-based routing rules.
 
@@ -56,12 +56,12 @@ module "ecs_env_prod" { source = "./modules/shared-ecs-env"; environment = "prod
 ### 3. Route53
 
 **3.1** Each environment's ALB must have a wildcard DNS alias record:
-- `*.dev.glaciar.org`  → dev ALB
-- `*.prod.glaciar.org` → prod ALB
+- `*.dev.backstage.glaciar.org`  → dev ALB
+- `*.prod.backstage.glaciar.org` → prod ALB
 
 **3.2** The wildcard record must be an alias A record in the existing `glaciar.org` Route53 hosted zone.
 
-**3.3** ACM certificates must validate via DNS and cover `*.dev.glaciar.org` / `*.prod.glaciar.org`.
+**3.3** ACM certificates must validate via DNS and cover `*.dev.backstage.glaciar.org` / `*.prod.backstage.glaciar.org`.
 
 ---
 

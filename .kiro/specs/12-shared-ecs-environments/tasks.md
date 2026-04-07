@@ -30,9 +30,9 @@
 - [ ] 5. Apply Terraform and verify
   - [ ] 5.1 Run `terraform plan` targeting both ecs_env modules, review output
   - [ ] 5.2 Run `terraform apply` for dev environment first
-  - [ ] 5.3 Verify `*.dev.glaciar.org` wildcard DNS resolves to dev ALB
+  - [ ] 5.3 Verify `*.dev.backstage.glaciar.org` wildcard DNS resolves to dev ALB
   - [ ] 5.4 Run `terraform apply` for prod environment
-  - [ ] 5.5 Verify `*.prod.glaciar.org` wildcard DNS resolves to prod ALB
+  - [ ] 5.5 Verify `*.prod.backstage.glaciar.org` wildcard DNS resolves to prod ALB
   - _Requirements: 1.1–1.5, 3.1–3.3_
 
 - [ ] 6. Test Backstage template
