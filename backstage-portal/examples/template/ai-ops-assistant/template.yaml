@@ -92,7 +92,7 @@ spec:
           title: Deploy to shared ECS environment
           type: boolean
           description: Build a Docker image and deploy the service to the shared ECS cluster
-          default: false
+          default: true
         ecs_environment:
           title: Target environment
           type: string
@@ -139,6 +139,7 @@ spec:
       action: aws:route53:create-dns-record
       input:
         serviceName: ${{ parameters.service_name }}
+        environment: ${{ parameters.ecs_environment if parameters.deploy_to_ecs else 'dev' }}
 
     - id: register
       name: Register in catalog

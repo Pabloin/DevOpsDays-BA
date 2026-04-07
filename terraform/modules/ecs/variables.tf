@@ -80,6 +80,26 @@ variable "alb_hosted_zone_id" {
   type        = string
 }
 
+variable "apps_dev_alb_dns_name" {
+  description = "DNS name of the dev shared ECS environment ALB"
+  type        = string
+}
+
+variable "apps_dev_domain_name" {
+  description = "Domain for dev scaffolded services (e.g. dev.backstage.glaciar.org)"
+  type        = string
+}
+
+variable "apps_prod_alb_dns_name" {
+  description = "DNS name of the prod shared ECS environment ALB"
+  type        = string
+}
+
+variable "apps_prod_domain_name" {
+  description = "Domain for prod scaffolded services (e.g. prod.backstage.glaciar.org)"
+  type        = string
+}
+
 variable "cpu" {
   description = "CPU units for the ECS task (1 vCPU = 1024)"
   type        = number

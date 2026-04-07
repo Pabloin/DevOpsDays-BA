@@ -179,6 +179,22 @@ resource "aws_ecs_task_definition" "main" {
         {
           name  = "ALB_HOSTED_ZONE_ID"
           value = var.alb_hosted_zone_id
+        },
+        {
+          name  = "APPS_DEV_ALB_DNS_NAME"
+          value = var.apps_dev_alb_dns_name
+        },
+        {
+          name  = "APPS_DEV_DOMAIN_NAME"
+          value = var.apps_dev_domain_name
+        },
+        {
+          name  = "APPS_PROD_ALB_DNS_NAME"
+          value = var.apps_prod_alb_dns_name
+        },
+        {
+          name  = "APPS_PROD_DOMAIN_NAME"
+          value = var.apps_prod_domain_name
         }
       ]
 

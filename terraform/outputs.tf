@@ -55,6 +55,11 @@ output "ecs_dev_subdomain" {
   value       = module.ecs_env_dev.subdomain
 }
 
+output "ecs_dev_alb_dns_name" {
+  description = "DNS name of the dev shared ECS environment ALB"
+  value       = module.ecs_env_dev.alb_dns_name
+}
+
 # ─── Shared ECS: Prod ────────────────────────────────────────────────────────
 
 output "ecs_prod_cluster_name" {
@@ -75,4 +80,9 @@ output "ecs_prod_alb_sg_id" {
 output "ecs_prod_subdomain" {
   description = "Prod environment subdomain (e.g. prod.backstage.glaciar.org)"
   value       = module.ecs_env_prod.subdomain
+}
+
+output "ecs_prod_alb_dns_name" {
+  description = "DNS name of the prod shared ECS environment ALB"
+  value       = module.ecs_env_prod.alb_dns_name
 }

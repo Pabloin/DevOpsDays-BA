@@ -8,7 +8,7 @@ variable "alb_dns_name" {
   type        = string
   default     = null
   validation {
-    condition     = var.alb_dns_name == null || length(var.alb_dns_name) > 0
+    condition     = var.alb_dns_name == null || try(length(var.alb_dns_name) > 0, false)
     error_message = "alb_dns_name must not be empty."
   }
 }
