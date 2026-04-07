@@ -12,7 +12,7 @@ metadata:
     - bedrock
   links:
     - url: https://${{ values.service_name }}.backstage.glaciar.org
-      title: Service URL
+      title: Service URL (docker-compose)
       icon: web
     - url: https://github.com/${{ values.repo_owner }}/${{ values.service_name }}
       title: GitHub Repository
@@ -20,6 +20,11 @@ metadata:
     - url: https://console.aws.amazon.com/cloudwatch/home?region=${{ values.aws_region }}#logsV2:log-groups
       title: CloudWatch Logs
       icon: dashboard
+    {%- if values.deploy_to_ecs %}
+    - url: https://${{ values.service_name }}.${{ values.ecs_environment }}.backstage.glaciar.org
+      title: ECS Service URL (${{ values.ecs_environment }})
+      icon: cloud
+    {%- endif %}
 spec:
   type: service
   lifecycle: experimental

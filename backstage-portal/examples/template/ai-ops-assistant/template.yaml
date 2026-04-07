@@ -86,6 +86,25 @@ spec:
           description: Create {service_name}.backstage.glaciar.org pointing to the portal ALB
           default: true
 
+    - title: Deploy to ECS (optional)
+      properties:
+        deploy_to_ecs:
+          title: Deploy to shared ECS environment
+          type: boolean
+          description: Build a Docker image and deploy the service to the shared ECS cluster
+          default: false
+        ecs_environment:
+          title: Target environment
+          type: string
+          description: Which shared ECS environment to deploy to
+          default: dev
+          enum:
+            - dev
+            - prod
+          enumNames:
+            - 'dev — my-app.dev.backstage.glaciar.org'
+            - 'prod — my-app.prod.backstage.glaciar.org'
+
   steps:
     - id: fetch
       name: Fetch template
@@ -99,6 +118,8 @@ spec:
           bedrock_model: ${{ parameters.bedrock_model }}
           aws_region: ${{ parameters.aws_region }}
           repo_owner: ${{ parameters.owner }}
+          deploy_to_ecs: ${{ parameters.deploy_to_ecs }}
+          ecs_environment: ${{ parameters.ecs_environment }}
 
     - id: publish
       name: Publish to GitHub
@@ -126,6 +147,19 @@ spec:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: /catalog-info.yaml
 
+    - id: deploy-ecs
+      name: Deploy to ECS
+      if: ${{ parameters.deploy_to_ecs }}
+      action: github:actions:dispatch
+      input:
+        repoUrl: github.com?owner=Pabloin&repo=DevOpsDays-BA
+        workflowId: deploy-service.yml
+        branchOrTagName: main
+        workflowInputs:
+          service_name: ${{ parameters.repo_name }}
+          environment: ${{ parameters.ecs_environment }}
+          bedrock_model_id: ${{ parameters.bedrock_model }}
+
   output:
     links:
       - title: Repository
@@ -133,5 +167,7 @@ spec:
       - title: Open in Backstage catalog
         icon: catalog
         entityRef: ${{ steps.register.output.entityRef }}
-      - title: Service URL
+      - title: Service URL (docker-compose)
         url: https://${{ parameters.service_name }}.backstage.glaciar.org
+      - title: ECS Service URL
+        url: https://${{ parameters.repo_name }}.${{ parameters.ecs_environment }}.backstage.glaciar.org
