@@ -1,0 +1,66 @@
+name: Provision Shared ECS Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to provision (dev or prod)'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  provision:
+    name: Terraform apply — ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: us-east-1
+      TF_VAR_github_oauth_client_id: ${{ secrets.TF_VAR_GITHUB_OAUTH_CLIENT_ID }}
+      TF_VAR_github_oauth_client_secret: ${{ secrets.TF_VAR_GITHUB_OAUTH_CLIENT_SECRET }}
+      TF_VAR_github_pat: ${{ secrets.TF_VAR_GITHUB_PAT }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        with:
+          role-to-assume: ${{ secrets.TERRAFORM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269ef065 # v3.1.2
+        with:
+          terraform_version: "~1.10"
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform plan
+        working-directory: terraform
+        run: |
+          terraform plan \
+            -target=module.ecs_env_${{ inputs.environment }} \
+            -out=tfplan-${{ inputs.environment }}
+
+      - name: Terraform apply
+        working-directory: terraform
+        run: |
+          terraform apply -auto-approve tfplan-${{ inputs.environment }}
+
+      - name: Show nameservers
+        working-directory: terraform
+        run: |
+          echo "=== NS records for ${{ inputs.environment }}.glaciar.org ==="
+          terraform output ecs_${{ inputs.environment }}_nameservers
+          echo ""
+          echo "Add these as an NS record for ${{ inputs.environment }}.glaciar.org"
+          echo "in the glaciar.org registrar to complete DNS delegation."

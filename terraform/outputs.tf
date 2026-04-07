@@ -27,3 +27,52 @@ output "github_actions_role_arn" {
   description = "ARN of the GitHub Actions IAM role — store as AWS_ROLE_ARN GitHub secret"
   value       = module.oidc.role_arn
 }
+
+output "terraform_provisioner_role_arn" {
+  description = "ARN of the Terraform provisioner IAM role — store as TERRAFORM_ROLE_ARN GitHub secret"
+  value       = aws_iam_role.terraform_provisioner.arn
+}
+
+# ─── Shared ECS: Dev ─────────────────────────────────────────────────────────
+
+output "ecs_dev_cluster_name" {
+  description = "ECS cluster name for the dev shared environment"
+  value       = module.ecs_env_dev.cluster_name
+}
+
+output "ecs_dev_alb_listener_arn" {
+  description = "HTTPS listener ARN for the dev ALB — services attach listener rules here"
+  value       = module.ecs_env_dev.alb_listener_arn_https
+}
+
+output "ecs_dev_alb_sg_id" {
+  description = "ALB security group ID for the dev environment"
+  value       = module.ecs_env_dev.alb_security_group_id
+}
+
+output "ecs_dev_nameservers" {
+  description = "NS records for dev.glaciar.org — add these as NS delegation in the glaciar.org registrar"
+  value       = module.ecs_env_dev.name_servers
+}
+
+# ─── Shared ECS: Prod ────────────────────────────────────────────────────────
+
+output "ecs_prod_cluster_name" {
+  description = "ECS cluster name for the prod shared environment"
+  value       = module.ecs_env_prod.cluster_name
+}
+
+output "ecs_prod_alb_listener_arn" {
+  description = "HTTPS listener ARN for the prod ALB — services attach listener rules here"
+  value       = module.ecs_env_prod.alb_listener_arn_https
+}
+
+output "ecs_prod_alb_sg_id" {
+  description = "ALB security group ID for the prod environment"
+  value       = module.ecs_env_prod.alb_security_group_id
+}
+
+output "ecs_prod_nameservers" {
+  description = "NS records for prod.glaciar.org — add these as NS delegation in the glaciar.org registrar"
+  value       = module.ecs_env_prod.name_servers
+}

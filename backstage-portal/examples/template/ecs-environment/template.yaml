@@ -1,0 +1,84 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: ecs-environment
+  title: Deploy ECS Environment
+  description: Provision a shared ECS Fargate environment (dev or prod) for hosting scaffolded services. Creates an ALB with wildcard HTTPS and Route53 DNS at *.{env}.glaciar.org.
+  tags:
+    - infrastructure
+    - aws
+    - ecs
+    - terraform
+spec:
+  owner: user:Pabloin
+  type: infrastructure
+
+  parameters:
+    - title: Environment
+      required: [environment, owner]
+      properties:
+        environment:
+          title: Environment
+          type: string
+          description: Which shared ECS environment to provision
+          enum:
+            - dev
+            - prod
+          enumNames:
+            - 'dev — *.dev.glaciar.org (Fargate Spot, cost-optimized)'
+            - 'prod — *.prod.glaciar.org (Fargate On-Demand)'
+          ui:autofocus: true
+        owner:
+          title: Owner
+          type: string
+          description: Backstage owner group for this environment entity
+          default: guests
+
+  steps:
+    - id: provision
+      name: Trigger Terraform provisioning
+      action: github:actions:dispatch
+      input:
+        repoUrl: github.com?owner=Pabloin&repo=DevOpsDays-BA
+        workflowId: provision-ecs-env.yml
+        branchOrTagName: main
+        workflowInputs:
+          environment: ${{ parameters.environment }}
+
+    - id: fetch
+      name: Generate catalog entity
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          environment: ${{ parameters.environment }}
+          owner: ${{ parameters.owner }}
+
+    - id: publish
+      name: Publish catalog entity to GitHub
+      action: publish:github
+      input:
+        description: Shared ECS ${{ parameters.environment }} environment for scaffolded services
+        repoUrl: github.com?owner=mvp-glaciar-org&repo=ecs-env-${{ parameters.environment }}
+        defaultBranch: main
+        repoVisibility: public
+        protectDefaultBranch: false
+        gitAuthorName: backstage-bot
+        gitAuthorEmail: backstage@glaciar.org
+
+    - id: register
+      name: Register in Backstage catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+
+  output:
+    links:
+      - title: GitHub Actions — provisioning run
+        url: https://github.com/Pabloin/DevOpsDays-BA/actions/workflows/provision-ecs-env.yml
+      - title: Open in Backstage catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+      - title: Environment URL pattern
+        url: https://<service-name>.${{ parameters.environment }}.glaciar.org
