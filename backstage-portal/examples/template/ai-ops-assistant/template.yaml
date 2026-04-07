@@ -118,6 +118,8 @@ spec:
           bedrock_model: ${{ parameters.bedrock_model }}
           aws_region: ${{ parameters.aws_region }}
           repo_owner: ${{ parameters.owner }}
+          deploy_to_ecs: ${{ parameters.deploy_to_ecs }}
+          ecs_environment: ${{ parameters.ecs_environment }}
 
     - id: publish
       name: Publish to GitHub
