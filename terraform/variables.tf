@@ -47,21 +47,24 @@ variable "image_tag" {
 }
 
 variable "github_oauth_client_id" {
-  description = "GitHub OAuth application client ID"
+  description = "GitHub OAuth application client ID (required for Backstage portal, not for service deployments)"
   type        = string
   sensitive   = true
+  default     = null
 }
 
 variable "github_oauth_client_secret" {
-  description = "GitHub OAuth application client secret"
+  description = "GitHub OAuth application client secret (required for Backstage portal, not for service deployments)"
   type        = string
   sensitive   = true
+  default     = null
 }
 
 variable "github_pat" {
-  description = "GitHub Personal Access Token for the Backstage scaffolder"
+  description = "GitHub Personal Access Token for the Backstage scaffolder (required for Backstage portal, not for service deployments)"
   type        = string
   sensitive   = true
+  default     = null
 }
 
 variable "image_retention_count" {
