@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ecs-env-${{ values.environment }}
+  title: ECS Environment — ${{ values.environment }}
+  description: Shared ECS Fargate cluster for scaffolded services (${{ values.environment }}). Services deployed here are reachable at *.${{ values.environment }}.glaciar.org.
+  annotations:
+    backstage.io/managed-by-location: url:https://github.com/mvp-glaciar-org/ecs-env-${{ values.environment }}/blob/main/catalog-info.yaml
+    github.com/project-slug: mvp-glaciar-org/ecs-env-${{ values.environment }}
+  tags:
+    - aws
+    - ecs
+    - ${{ values.environment }}
+spec:
+  type: aws-ecs-cluster
+  owner: group:default/${{ values.owner }}
+  system: glaciar-platform

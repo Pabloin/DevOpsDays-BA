@@ -144,6 +144,28 @@ module "ecs" {
   project     = var.project
 }
 
+# ─── Shared ECS Environments (dev + prod for scaffolded apps) ────────────────
+
+module "ecs_env_dev" {
+  source = "./modules/shared-ecs-env"
+
+  environment       = "dev"
+  vpc_id            = module.vpc.vpc_id
+  public_subnet_ids = module.vpc.public_subnet_ids
+  base_domain       = "glaciar.org"
+  project           = var.project
+}
+
+module "ecs_env_prod" {
+  source = "./modules/shared-ecs-env"
+
+  environment       = "prod"
+  vpc_id            = module.vpc.vpc_id
+  public_subnet_ids = module.vpc.public_subnet_ids
+  base_domain       = "glaciar.org"
+  project           = var.project
+}
+
 # ─── OIDC (GitHub Actions) ────────────────────────────────────────────────────
 
 module "oidc" {
@@ -158,4 +180,43 @@ module "oidc" {
 
   environment = var.environment
   project     = var.project
+}
+
+# ─── Terraform Provisioner Role (for provision-ecs-env workflow) ──────────────
+# Separate role with broader permissions so GitHub Actions can run terraform apply
+# to provision shared ECS environments. Uses the same OIDC provider but allows
+# any ref from this repo (workflow_dispatch is not limited to main branch).
+
+resource "aws_iam_role" "terraform_provisioner" {
+  name = "${var.project}-${var.environment}-tf-provisioner"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Federated = module.oidc.oidc_provider_arn
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+        }
+        StringLike = {
+          "token.actions.githubusercontent.com:sub" = "repo:${var.github_repository}:*"
+        }
+      }
+    }]
+  })
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project
+    Name        = "${var.project}-${var.environment}-tf-provisioner"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "terraform_provisioner_admin" {
+  role       = aws_iam_role.terraform_provisioner.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
