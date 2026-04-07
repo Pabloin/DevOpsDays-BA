@@ -61,7 +61,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269ef065 # v3.1.2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "~1.10"
           terraform_wrapper: false
