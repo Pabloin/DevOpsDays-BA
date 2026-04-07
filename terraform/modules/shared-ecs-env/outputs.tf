@@ -38,17 +38,7 @@ output "wildcard_cert_arn" {
   value       = aws_acm_certificate_validation.wildcard.certificate_arn
 }
 
-output "hosted_zone_id" {
-  description = "Route53 hosted zone ID for {env}.glaciar.org"
-  value       = aws_route53_zone.env.zone_id
-}
-
-output "name_servers" {
-  description = "NS records for {env}.glaciar.org — add these as NS delegation in the glaciar.org registrar"
-  value       = aws_route53_zone.env.name_servers
-}
-
 output "subdomain" {
-  description = "The environment subdomain (e.g. dev.glaciar.org)"
+  description = "The environment subdomain (e.g. dev.backstage.glaciar.org)"
   value       = local.subdomain
 }

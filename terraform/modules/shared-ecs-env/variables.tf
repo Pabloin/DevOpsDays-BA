@@ -17,10 +17,15 @@ variable "public_subnet_ids" {
   type        = list(string)
 }
 
-variable "base_domain" {
-  description = "Base domain (e.g. glaciar.org) — a hosted zone will be created for {environment}.{base_domain}"
+variable "route53_zone_id" {
+  description = "ID of the existing backstage.glaciar.org Route53 hosted zone — records will be added here"
   type        = string
-  default     = "glaciar.org"
+}
+
+variable "base_domain" {
+  description = "Base domain (e.g. backstage.glaciar.org) — env subdomain will be {environment}.{base_domain}"
+  type        = string
+  default     = "backstage.glaciar.org"
 }
 
 variable "project" {

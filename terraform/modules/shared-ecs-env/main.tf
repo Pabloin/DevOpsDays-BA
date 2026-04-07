@@ -1,5 +1,5 @@
 locals {
-  # e.g. "dev.glaciar.org" or "prod.glaciar.org"
+  # e.g. "dev.backstage.glaciar.org" or "prod.backstage.glaciar.org"
   subdomain = "${var.environment}.${var.base_domain}"
 
   # ALB name has a 32-char AWS limit — keep it short
@@ -12,17 +12,9 @@ locals {
   }
 }
 
-# ─── Route53 Hosted Zone ──────────────────────────────────────────────────────
-
-resource "aws_route53_zone" "env" {
-  name = local.subdomain
-
-  tags = merge(local.tags, {
-    Name = "${var.project}-apps-${var.environment}-hz"
-  })
-}
-
-# ─── ACM Certificate (wildcard for *.{env}.glaciar.org) ──────────────────────
+# ─── ACM Certificate (wildcard for *.{env}.backstage.glaciar.org) ─────────────
+# DNS validation records go into the existing backstage.glaciar.org zone —
+# no NS delegation needed, cert validates immediately.
 
 resource "aws_acm_certificate" "wildcard" {
   domain_name       = "*.${local.subdomain}"
@@ -47,7 +39,7 @@ resource "aws_route53_record" "cert_validation" {
     }
   }
 
-  zone_id = aws_route53_zone.env.zone_id
+  zone_id = var.route53_zone_id
   name    = each.value.name
   type    = each.value.type
   records = [each.value.record]
@@ -151,11 +143,11 @@ resource "aws_lb_listener" "https" {
 }
 
 # ─── Route53 Wildcard Alias Record ───────────────────────────────────────────
-# *.{env}.glaciar.org → ALB
-# Services are reachable at <service-name>.{env}.glaciar.org
+# *.{env}.backstage.glaciar.org → ALB
+# Goes into the existing backstage.glaciar.org hosted zone.
 
 resource "aws_route53_record" "wildcard" {
-  zone_id = aws_route53_zone.env.zone_id
+  zone_id = var.route53_zone_id
   name    = "*.${local.subdomain}"
   type    = "A"
 

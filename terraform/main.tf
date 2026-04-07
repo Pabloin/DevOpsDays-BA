@@ -152,7 +152,8 @@ module "ecs_env_dev" {
   environment       = "dev"
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
-  base_domain       = "glaciar.org"
+  route53_zone_id   = module.dns.hosted_zone_id
+  base_domain       = var.domain_name
   project           = var.project
 }
 
@@ -162,7 +163,8 @@ module "ecs_env_prod" {
   environment       = "prod"
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
-  base_domain       = "glaciar.org"
+  route53_zone_id   = module.dns.hosted_zone_id
+  base_domain       = var.domain_name
   project           = var.project
 }
 

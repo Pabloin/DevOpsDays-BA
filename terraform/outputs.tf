@@ -50,9 +50,9 @@ output "ecs_dev_alb_sg_id" {
   value       = module.ecs_env_dev.alb_security_group_id
 }
 
-output "ecs_dev_nameservers" {
-  description = "NS records for dev.glaciar.org — add these as NS delegation in the glaciar.org registrar"
-  value       = module.ecs_env_dev.name_servers
+output "ecs_dev_subdomain" {
+  description = "Dev environment subdomain (e.g. dev.backstage.glaciar.org)"
+  value       = module.ecs_env_dev.subdomain
 }
 
 # ─── Shared ECS: Prod ────────────────────────────────────────────────────────
@@ -72,7 +72,7 @@ output "ecs_prod_alb_sg_id" {
   value       = module.ecs_env_prod.alb_security_group_id
 }
 
-output "ecs_prod_nameservers" {
-  description = "NS records for prod.glaciar.org — add these as NS delegation in the glaciar.org registrar"
-  value       = module.ecs_env_prod.name_servers
+output "ecs_prod_subdomain" {
+  description = "Prod environment subdomain (e.g. prod.backstage.glaciar.org)"
+  value       = module.ecs_env_prod.subdomain
 }

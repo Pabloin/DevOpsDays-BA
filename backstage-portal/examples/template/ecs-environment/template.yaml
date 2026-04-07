@@ -81,4 +81,4 @@ spec:
         icon: catalog
         entityRef: ${{ steps.register.output.entityRef }}
       - title: Environment URL pattern
-        url: https://<service-name>.${{ parameters.environment }}.glaciar.org
+        url: https://<service-name>.${{ parameters.environment }}.backstage.glaciar.org
