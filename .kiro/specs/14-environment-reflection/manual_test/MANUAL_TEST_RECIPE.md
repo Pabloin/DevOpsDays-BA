@@ -227,11 +227,208 @@ grep "deploy-service.yml" backstage-portal/examples/template/ai-ops-assistant/te
 
 ---
 
-## Phase 5: Service Deployment Test (Optional - Real Deployment)
+## Phase 5: Authentication & Integration Checks
 
-**⚠️ This phase actually deploys a test service. Only do if you want full end-to-end test.**
+**Prerequisites before deploying — verify the auth chain is working**
 
-### Step 5.1: Create test repo
+### Step 5.1: Login to Backstage Portal
+
+**Open in browser:**
+```
+https://backstage.glaciar.org
+```
+
+**Login with GitHub:**
+1. Click **"Login with GitHub"** button
+2. Authorize the Backstage app
+3. You should land on the Backstage home page
+
+**What to expect**: Backstage loads, user menu shows your GitHub username
+
+**Questions for Claude**:
+- Portal loads? ✅
+- Can you log in? ✅
+- See your GitHub username in top-right? ✅
+
+---
+
+### Step 5.2: Verify GitHub Integration
+
+**In Backstage UI:**
+1. Click **"Create"** button
+2. You should see available templates (including "AI Ops Assistant")
+3. This means GitHub integration is working
+
+**What to expect**: Templates list appears (GitHub org accessible)
+
+**Questions for Claude**:
+- Can you see templates? ✅
+- "AI Ops Assistant" visible? ✅
+
+---
+
+### Step 5.3: Verify OIDC/GitHub Actions Setup
+
+**Run this command to verify GitHub Actions can access AWS:**
+```bash
+gh repo view Pabloin/DevOpsDays-BA --json deployKeys
+```
+
+Or check that the `deploy-service.yml` workflow exists:
+```bash
+gh workflow list --repo Pabloin/DevOpsDays-BA | grep deploy-service
+```
+
+**What to expect**: Workflow appears in list
+
+**Questions for Claude**:
+- Workflow visible? ✅
+- Can GitHub Actions access repo? ✅
+
+---
+
+**Phase 5 Summary**: ✅ Auth chain validated. Ready to deploy!
+
+---
+
+## Phase 6: Service Deployment Test (Real Deployment)
+
+**⚠️ This phase actually deploys a test service via Backstage UI. Only do if you want full end-to-end test.**
+
+---
+
+## ✅ RECOMMENDED: Using Backstage UI (The Real Demo Experience)
+
+This is the **actual way users will use the platform** — via the Backstage web interface.
+
+### Step 5.0: Access Backstage Portal
+
+**Open in browser:**
+```
+https://backstage.glaciar.org
+```
+
+Or from terminal:
+```bash
+open https://backstage.glaciar.org
+```
+
+**What to expect**: Backstage portal loads with navigation menu
+
+**Questions for Claude**:
+- Portal loads? ✅
+- Can you see the navigation?
+
+---
+
+### Step 5.1: Navigate to Create Template
+
+1. Click **"Create"** button (top menu or left sidebar)
+2. You should see available templates
+3. Select **"AI Ops Assistant"** template
+
+**What to expect**: Template form appears with fields
+
+**Questions for Claude**:
+- Template form shows? ✅
+- Can you see all form fields?
+
+---
+
+### Step 5.2: Fill Template Form
+
+Fill in these fields:
+
+| Field | Value |
+|-------|-------|
+| Service Name | `test-reflection-ai` |
+| Owner | (select your group) |
+| Bedrock Model | `anthropic.claude-3-haiku-20240307-v1:0` |
+| **Deploy to ECS** | ✅ Check this box |
+| ECS Environment | `dev` |
+
+**What to expect**: Form accepts input, fields populate
+
+**Questions for Claude**:
+- All fields filled? ✅
+- Deploy to ECS checkbox checked? ✅
+
+---
+
+### Step 5.3: Submit Template (Backstage UI)
+
+Click **"Create"** or **"Submit"** button at bottom of form
+
+**What to expect**: 
+- Progress shown on screen
+- Backstage creates repository in `mvp-glaciar-org`
+- Triggers `deploy-service.yml` GitHub Actions workflow
+- Shows service URL when complete
+
+**Questions for Claude**:
+- Form submitted? ✅
+- Progress screen showing? ✅
+- Got service URL? (e.g., https://test-reflection-ai.dev.backstage.glaciar.org)
+
+---
+
+### Step 5.4: Monitor Deployment Progress
+
+**In Backstage UI:**
+- You should see deployment status messages
+- Workflow will be triggered automatically
+- Once complete, service URL will be shown
+
+**In Terminal (Optional - Watch Workflow):**
+```bash
+gh run list --repo Pabloin/DevOpsDays-BA --limit 1
+gh run watch <RUN_ID> --repo Pabloin/DevOpsDays-BA --exit-status
+```
+
+**What to expect**: Workflow completes in 5-10 minutes
+
+**Questions for Claude**:
+- Workflow completed? ✅
+- Any errors? ❌
+
+---
+
+### Step 5.5: Verify Service is Running
+
+**Test the service endpoint:**
+```bash
+curl -k https://test-reflection-ai.dev.backstage.glaciar.org/api/health
+```
+
+**What to expect**: JSON response like `{"status":"ok"}`
+
+**Questions for Claude**:
+- Service responds? ✅
+- Health check returns 200? ✅
+
+---
+
+### Step 5.6: Test Bedrock Integration
+
+```bash
+curl -k -X POST https://test-reflection-ai.dev.backstage.glaciar.org/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Hello, test"}'
+```
+
+**What to expect**: JSON response with Bedrock completion
+
+**Questions for Claude**:
+- Endpoint responds? ✅
+- Got Bedrock response? ✅
+
+---
+
+## ALTERNATIVE: CLI Approach (For Automation/Testing)
+
+If you prefer command-line only, follow the steps below:
+
+### Step 5.CLI.1: Create test repo
 ```bash
 gh repo create mvp-glaciar-org/test-reflection-ai --public --description "Reflection test service"
 ```
@@ -243,7 +440,7 @@ gh repo create mvp-glaciar-org/test-reflection-ai --public --description "Reflec
 
 ---
 
-### Step 5.2: Clone and commit test code
+### Step 5.CLI.2: Clone and commit test code
 ```bash
 git clone https://github.com/mvp-glaciar-org/test-reflection-ai.git /tmp/test-reflection-ai
 cd /tmp/test-reflection-ai
@@ -262,7 +459,7 @@ git push
 
 ---
 
-### Step 5.3: Trigger deployment workflow
+### Step 5.CLI.3: Trigger deployment workflow
 ```bash
 gh workflow run deploy-service.yml \
   -f service_name=test-reflection-ai \
@@ -279,7 +476,7 @@ gh workflow run deploy-service.yml \
 
 ---
 
-### Step 5.4: Wait for deployment
+### Step 5.CLI.4: Wait for deployment
 ```bash
 # Check workflow status
 gh run list --repo Pabloin/DevOpsDays-BA --limit 1
@@ -296,7 +493,7 @@ gh run watch <RUN_ID> --repo Pabloin/DevOpsDays-BA --exit-status
 
 ---
 
-### Step 5.5: Verify ECS service running
+### Step 5.CLI.5: Verify ECS service running
 ```bash
 aws ecs describe-services \
   --cluster backstage-apps-dev \
@@ -320,7 +517,7 @@ aws ecs describe-services \
 
 ---
 
-### Step 5.6: Test service endpoint
+### Step 5.CLI.6: Test service endpoint
 ```bash
 curl -k https://test-reflection-ai.dev.backstage.glaciar.org/api/health
 ```
@@ -333,7 +530,7 @@ curl -k https://test-reflection-ai.dev.backstage.glaciar.org/api/health
 
 ---
 
-### Step 5.7: Test Bedrock integration
+### Step 5.CLI.7: Test Bedrock integration
 ```bash
 curl -k -X POST https://test-reflection-ai.dev.backstage.glaciar.org/api/chat \
   -H "Content-Type: application/json" \
