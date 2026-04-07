@@ -1,0 +1,30 @@
+# Generated test artifacts
+.kiro/REFLECTION_TEST_REPORT.md
+.kiro/specs/*/test/reflection-test.log
+
+# Dependencies
+node_modules/
+yarn.lock
+package-lock.json
+
+# Build outputs
+dist/
+build/
+
+# Environment
+.env*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db

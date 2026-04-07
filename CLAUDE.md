@@ -147,6 +147,38 @@ The portal runs at `backstage.glaciar.org`:
 3. ACM certificate auto-validates via DNS
 4. ALB HTTPS listener uses the certificate
 
+### Shared ECS Environments (Specs 12-13)
+
+In addition to the Backstage portal, there are two shared ECS deployment environments for scaffolded services:
+
+**Domain Structure:**
+- `backstage.glaciar.org` — Backstage portal itself
+- `dev.backstage.glaciar.org` — Dev shared ECS environment (wildcard domain)
+- `prod.backstage.glaciar.org` — Prod shared ECS environment (wildcard domain)
+- `<service-name>.dev.backstage.glaciar.org` — Individual scaffolded services in dev
+- `<service-name>.prod.backstage.glaciar.org` — Individual scaffolded services in prod
+
+**Infrastructure:**
+Each environment (dev/prod) has:
+- Dedicated ECS Fargate cluster (`backstage-apps-dev`, `backstage-apps-prod`)
+- Application Load Balancer (ALB) with HTTPS
+- Wildcard ACM certificate for `*.dev.backstage.glaciar.org` and `*.prod.backstage.glaciar.org`
+- Route53 alias records under `backstage.glaciar.org` hosted zone
+- Host-based ALB routing rules (one per deployed service)
+
+**Terraform Outputs:**
+```bash
+terraform output ecs_dev_cluster_name      # backstage-apps-dev
+terraform output ecs_prod_cluster_name     # backstage-apps-prod
+terraform output ecs_dev_alb_listener_arn  # ALB listener for dev
+terraform output ecs_prod_alb_listener_arn # ALB listener for prod
+terraform output ecs_dev_subdomain         # dev.backstage.glaciar.org
+terraform output ecs_prod_subdomain        # prod.backstage.glaciar.org
+```
+
+**GitHub Organization:**
+All scaffolded services are created in the `mvp-glaciar-org` GitHub organization.
+
 ### Troubleshooting
 
 **Verify GitHub Token is correct:**

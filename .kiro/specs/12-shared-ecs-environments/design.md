@@ -4,8 +4,8 @@
 
 ```
 glaciar.org (Route53 hosted zone)
-  ├── *.dev.glaciar.org  → ALB (dev)  → ECS Fargate cluster (dev)
-  └── *.prod.glaciar.org → ALB (prod) → ECS Fargate cluster (prod)
+  ├── *.dev.backstage.glaciar.org  → ALB (dev)  → ECS Fargate cluster (dev)
+  └── *.prod.backstage.glaciar.org → ALB (prod) → ECS Fargate cluster (prod)
 
 Each ALB has:
   - HTTPS listener (port 443) with wildcard ACM cert

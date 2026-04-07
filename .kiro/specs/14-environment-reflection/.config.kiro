@@ -1,0 +1,27 @@
+spec: 14
+name: "Environment Reflection & Testing"
+description: "Automated validation suite for DevOpsDays BA platform (specs 12–13). Tests GitHub organization, AWS infrastructure, DNS, scaffolder template, and end-to-end service deployment."
+owner: "Pabloin"
+status: "in-progress"
+created: 2026-04-07
+target_date: 2026-04-07
+
+priority: high
+category: testing
+epic: devopsdaysba-platform
+
+related_specs:
+  - 12: Shared ECS Environments
+  - 13: Deploy Service to ECS
+
+goals:
+  - Validate specs 12 & 13 are fully functional
+  - Provide automated, reproducible environment testing
+  - Generate detailed pass/fail reports
+  - Enable confident demo preparation
+
+success_metrics:
+  - All 6 test phases pass
+  - Report generated with summary
+  - No manual intervention required
+  - Reproducible on re-run (idempotent)
