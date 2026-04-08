@@ -92,8 +92,8 @@ export default function App() {
     <div className="app">
       <header className="header">
         <span className="header-icon">🤖</span>
-        <span className="header-title">{SERVICE_NAME}</span>
-        <span className="header-sub">Powered by AWS Bedrock</span>
+        <span className="header-title">DevOpsDaysBA 2026</span>
+        <span className="header-sub">Powered by AWS Bedrock · {SERVICE_NAME}</span>
       </header>
 
       <div className="messages">
