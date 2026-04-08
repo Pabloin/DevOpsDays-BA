@@ -1,0 +1,23 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  trigger:
+    name: Trigger deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch deploy-service workflow
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repository: Pabloin/DevOpsDays-BA
+          event-type: deploy-service
+          client-payload: |
+            {
+              "service_name": "${{ values.service_name }}",
+              "environment": "${{ values.ecs_environment }}",
+              "bedrock_model_id": "${{ values.bedrock_model_id }}"
+            }

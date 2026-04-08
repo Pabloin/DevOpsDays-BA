@@ -24,10 +24,12 @@ on:
         required: false
         type: string
         default: 'latest'
+  repository_dispatch:
+    types: [deploy-service]
 
 jobs:
   deploy:
-    name: Deploy ${{ inputs.service_name }} → ${{ inputs.environment }}
+    name: Deploy ${{ github.event.inputs.service_name || github.event.client_payload.service_name }} → ${{ github.event.inputs.environment || github.event.client_payload.environment }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -35,6 +37,10 @@ jobs:
 
     env:
       AWS_REGION: us-east-1
+      SERVICE_NAME: ${{ github.event.inputs.service_name || github.event.client_payload.service_name }}
+      ENVIRONMENT:  ${{ github.event.inputs.environment  || github.event.client_payload.environment }}
+      MODEL_ID:     ${{ github.event.inputs.bedrock_model_id || github.event.client_payload.bedrock_model_id || 'anthropic.claude-3-haiku-20240307-v1:0' }}
+      IMAGE_TAG:    ${{ github.event.inputs.image_tag || 'latest' }}
 
     steps:
       - name: Checkout infra repo
@@ -46,7 +52,7 @@ jobs:
       - name: Checkout service repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          repository: mvp-glaciar-org/${{ inputs.service_name }}
+          repository: mvp-glaciar-org/${{ env.SERVICE_NAME }}
           token: ${{ secrets.GH_PAT }}
           path: service
 
@@ -69,7 +75,7 @@ jobs:
       - name: Register service in services.tf (idempotent)
         working-directory: infra
         run: |
-          MODULE_NAME="svc_$(echo '${{ inputs.service_name }}' | tr '-' '_')_${{ inputs.environment }}"
+          MODULE_NAME="svc_$(echo "${SERVICE_NAME}" | tr '-' '_')_${ENVIRONMENT}"
 
           if grep -q "module \"${MODULE_NAME}\"" terraform/services.tf; then
             echo "Module ${MODULE_NAME} already registered, skipping."
@@ -79,15 +85,15 @@ jobs:
           module "${MODULE_NAME}" {
             source = "./modules/deploy-service"
 
-            service_name          = "${{ inputs.service_name }}"
-            environment           = "${{ inputs.environment }}"
+            service_name          = "${SERVICE_NAME}"
+            environment           = "${ENVIRONMENT}"
             vpc_id                = module.vpc.vpc_id
             private_subnet_ids    = module.vpc.private_subnet_ids
-            cluster_arn           = module.ecs_env_${{ inputs.environment }}.cluster_arn
-            alb_listener_arn      = module.ecs_env_${{ inputs.environment }}.alb_listener_arn_https
-            alb_security_group_id = module.ecs_env_${{ inputs.environment }}.alb_security_group_id
-            bedrock_model_id      = "${{ inputs.bedrock_model_id }}"
-            image_tag             = "${{ inputs.image_tag }}"
+            cluster_arn           = module.ecs_env_${ENVIRONMENT}.cluster_arn
+            alb_listener_arn      = module.ecs_env_${ENVIRONMENT}.alb_listener_arn_https
+            alb_security_group_id = module.ecs_env_${ENVIRONMENT}.alb_security_group_id
+            bedrock_model_id      = "${MODEL_ID}"
+            image_tag             = "${IMAGE_TAG}"
             project               = "backstage"
           }
           EOF
@@ -95,7 +101,7 @@ jobs:
             git config user.email "backstage-bot@glaciar.org"
             git config user.name "backstage-bot"
             git add terraform/services.tf
-            git commit -m "feat: register ${{ inputs.service_name }} in ${{ inputs.environment }}"
+            git commit -m "feat: register ${SERVICE_NAME} in ${ENVIRONMENT}"
             git push
           fi
 
@@ -121,27 +127,27 @@ jobs:
         id: ecr
         working-directory: infra/terraform
         run: |
-          MODULE_NAME="svc_$(echo '${{ inputs.service_name }}' | tr '-' '_')_${{ inputs.environment }}"
+          MODULE_NAME="svc_$(echo "${SERVICE_NAME}" | tr '-' '_')_${ENVIRONMENT}"
           ECR_URL=$(terraform output -raw ${MODULE_NAME}_ecr_repository_url 2>/dev/null || \
             terraform output -json | jq -r ".${MODULE_NAME}_ecr_repository_url.value // empty")
           # Fallback: construct from account + region
           if [ -z "$ECR_URL" ]; then
             ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-            ECR_URL="${ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ inputs.service_name }}-${{ inputs.environment }}"
+            ECR_URL="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${SERVICE_NAME}-${ENVIRONMENT}"
           fi
           echo "url=${ECR_URL}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         working-directory: service
         run: |
-          IMAGE="${{ steps.ecr.outputs.url }}:${{ inputs.image_tag }}"
+          IMAGE="${{ steps.ecr.outputs.url }}:${IMAGE_TAG}"
           docker build -t "${IMAGE}" .
           docker push "${IMAGE}"
 
       - name: Force new ECS deployment
         run: |
-          CLUSTER="backstage-apps-${{ inputs.environment }}"
-          SERVICE="${{ inputs.service_name }}-${{ inputs.environment }}"
+          CLUSTER="backstage-apps-${ENVIRONMENT}"
+          SERVICE="${SERVICE_NAME}-${ENVIRONMENT}"
           aws ecs update-service \
             --cluster "${CLUSTER}" \
             --service "${SERVICE}" \
@@ -153,4 +159,4 @@ jobs:
       - name: Service URL
         run: |
           echo "✅ Service deployed!"
-          echo "URL: https://${{ inputs.service_name }}.${{ inputs.environment }}.backstage.glaciar.org"
+          echo "URL: https://${SERVICE_NAME}.${ENVIRONMENT}.backstage.glaciar.org"
