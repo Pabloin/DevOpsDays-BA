@@ -31,7 +31,10 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
+          // Claude requires first message to be 'user' — strip leading assistant greeting
+          messages: updatedMessages
+            .slice(updatedMessages.findIndex(m => m.role === 'user'))
+            .map(m => ({ role: m.role, content: m.content })),
         }),
       });
 
